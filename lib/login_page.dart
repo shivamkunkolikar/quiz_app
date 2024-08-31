@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/home_page.dart';
-import 'package:firebase_core/firebase_core.dart';
+//import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:quiz_app/main.dart';
+//import 'package:quiz_app/main.dart';
 // import 'package:project/utils/routes.dart';
 import 'package:quiz_app/func_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -26,6 +27,8 @@ class _LoginPageState extends State<LoginPage> {
       if (userDoc.exists) {
         String storedPassword = userDoc['password'];
         if (storedPassword == password) {
+          email = userDoc['email'];
+          createdTests = userDoc['createdTests'];
           return true;
         } else {
           return false;
@@ -43,6 +46,9 @@ class _LoginPageState extends State<LoginPage> {
 
   moveToHome(BuildContext context) async {
     login_true = await is_correct(username, password);
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('username', username);
+    prefs.setString('email', email);
     print(username);
     if(login_true) {
       setState(() { changeButton = true; });

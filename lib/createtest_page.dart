@@ -406,7 +406,6 @@ class _CreateTestPageState extends State<CreateTestPage> {
   _CreateTestPageState(this.flag, this.ind);
   bool flag;
   int ind;
-  String tmp = 'please wait ...';
 
   final TextEditingController _testNameController = TextEditingController();
   final TextEditingController _testDurationController = TextEditingController();
@@ -429,6 +428,10 @@ class _CreateTestPageState extends State<CreateTestPage> {
   void _createTest() {
     // Logic to create the test
     saveQuizToFirestore(curr_quiz);
+    final db = FirebaseFirestore.instance;
+    DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
+    createdTests.add(docRef);
+    updateCreatedTestList(createdTests);
     print("Create Test button pressed");
   }
 
@@ -441,11 +444,7 @@ class _CreateTestPageState extends State<CreateTestPage> {
     }
   }
 
-  void _setQuizId() {
-    setState(() {
-      tmp = curr_quiz.id;
-    });
-  }
+  
 
   
 

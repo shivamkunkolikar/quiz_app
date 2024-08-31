@@ -1,11 +1,11 @@
-import 'package:quiz_app/main.dart';
+//import 'package:quiz_app/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+//import 'package:firebase_core/firebase_core.dart';
+//import 'firebase_options.dart';
 
-String username = "";
+String username = '';
 String password = "";
-String emain = "";
+String email = '';
 List<dynamic> createdTests = [];
 List<dynamic> answeredTests = [];
 
@@ -107,5 +107,21 @@ Future<Quiz?> fetchQuizFromFirestore(String documentId) async {
   } catch (e) {
     print('Failed to fetch quiz: $e');
     return null;
+  }
+}
+
+
+Future<void> updateCreatedTestList(List<dynamic> newList) async {
+  try {
+    
+    DocumentReference userDocRef = FirebaseFirestore.instance.collection('users').doc(username);
+    
+    await userDocRef.update({
+      'createdTests': newList,
+    });
+
+    print('List updated successfully in Firestore.');
+  } catch (e) {
+    print('Error updating list: $e');
   }
 }

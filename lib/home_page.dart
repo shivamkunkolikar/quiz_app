@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/createtest_page.dart';
-import 'package:quiz_app/main.dart';
+//import 'package:quiz_app/main.dart';
 import 'package:quiz_app/func_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 
@@ -57,16 +58,24 @@ class _HomePageState extends State<HomePage> {
       drawer: Drawer(
         child: Column(
           children: [
-            const UserAccountsDrawerHeader(
-              accountName: Text('User Name'),
-              accountEmail: Text('user@example.com'),
-              currentAccountPicture: CircleAvatar(
+            UserAccountsDrawerHeader(
+              accountName: Text(username),
+              accountEmail: Text(email),
+              currentAccountPicture: const CircleAvatar(
                 backgroundColor: Colors.white,
                 child: Text('U',
-                  style: const TextStyle(fontSize: 40.0),
+                  style: TextStyle(fontSize: 40.0),
                 ),
               ),
-              decoration: BoxDecoration(color: Color(0xFF0094FF)),
+              decoration: const BoxDecoration(color: Color(0xFF0094FF)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+              autofocus: true,
             ),
             ListTile(
               leading: const Icon(Icons.dashboard),
@@ -86,9 +95,11 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Sign Out'),
-              onTap: () {
+              onTap: () async{
                 Navigator.pop(context);
-                // Handle sign out
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.remove('username');
+                await prefs.remove('email');
               },
             ),
           ],
@@ -135,16 +146,19 @@ class _HomePageState extends State<HomePage> {
                 : Container(
                     height: 100,
                     child: ListView.builder(
+                      
                       scrollDirection: Axis.horizontal,
                       itemCount: createdTests.length,
                       itemBuilder: (context, index) {
+                        int reverseIndex = createdTests.length - 1 - index;
+
                         return GestureDetector(
-                          onTap: () => _navigateToTestDetail(createdTests[index]),
+                          onTap: () => _navigateToTestDetail(createdTests[reverseIndex]),
                           child: Card(
                             child: Container(
                               width: 150,
                               padding: const EdgeInsets.all(8.0),
-                              child: Center(child: Text(createdTests[index])),
+                              child: Center(child: Text(createdTests[reverseIndex].toString())),
                             ),
                           ),
                         );

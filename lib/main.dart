@@ -1,10 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:quiz_app/home_page.dart';
 import 'firebase_options.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+//import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:quiz_app/func_utils.dart';
 import 'package:quiz_app/login_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 
@@ -14,10 +16,20 @@ void main() async{
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // final db = FirebaseFirestore.instance;
-  // final alovelaceDocumentRef = db.collection("users").doc("alovelace");
-  // print(alovelaceDocumentRef);
+  //await prefs.setInt('counter', coun);
 
+  final prefs = await SharedPreferences.getInstance();
+  var tmpUsername = prefs.getString('username');
+  var tmpEmail = prefs.getString('email');
+  if(tmpUsername != null && tmpEmail != null) {
+    username = tmpUsername;
+    email = tmpEmail;
+
+    final db = FirebaseFirestore.instance;
+    final doc = await db.collection('users').doc(username).get();
+    createdTests = doc['createdTests'];
+    print(createdTests);
+  }
   runApp(const MyApp());
 }
 
@@ -27,6 +39,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
+    
+
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -35,7 +50,7 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       // home: const MyHomePage(title: 'Flutter Demo Home Page')
-      home: LoginPage(),
+      home: username == '' ? LoginPage() : HomePage(),
       // home: HomePage(),
 
     );
