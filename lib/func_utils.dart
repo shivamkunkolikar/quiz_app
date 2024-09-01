@@ -48,6 +48,11 @@ class Quiz {
   int time;
   bool isActive = false;
   bool isComplete = false;
+  List<int> ans_arr = [];
+
+  Question at_loc(int index) {
+    return que[index - 1];
+  }
 
   Map<String, dynamic> toMap() {
     return {

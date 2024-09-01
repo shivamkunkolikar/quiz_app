@@ -117,6 +117,7 @@ class _QuizInputPageState extends State<QuizInputPage> {
     }
     print('Total Correct Marks: $totalCorrectMarks');
     curr_quiz.que = allQuestions;
+    saveQuizToFirestore(curr_quiz);
     Navigator.pop(context);
   }
 
@@ -435,14 +436,14 @@ class _CreateTestPageState extends State<CreateTestPage> {
     print("Create Test button pressed");
   }
 
-  void getData(ind) async{
-    final db = FirebaseFirestore.instance;
-    final quizMap = await createdTests[ind].get().data();
-    if(quizMap['isComplete']) {}
-    else {
-      curr_quiz = Quiz.fromMap(quizMap['id'], quizMap);
-    }
-  }
+  // void getData(ind) async{
+  //   final db = FirebaseFirestore.instance;
+  //   final quizMap = await createdTests[ind].get().data();
+  //   if(quizMap['isComplete']) {}
+  //   else {
+  //     curr_quiz = Quiz.fromMap(quizMap['id'], quizMap);
+  //   }
+  // }
 
   
 
@@ -451,10 +452,7 @@ class _CreateTestPageState extends State<CreateTestPage> {
   @override
   Widget build(BuildContext context) {
 
-    if(flag) {
-      print('Enteres True Flag');
-      getData(ind);
-    }
+    
 
     return Scaffold(
       appBar: AppBar(

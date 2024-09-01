@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_app/answertest_page.dart';
 import 'package:quiz_app/createtest_page.dart';
 //import 'package:quiz_app/main.dart';
 import 'package:quiz_app/func_utils.dart';
@@ -40,12 +41,28 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _navigateToTestDetail(String test) {
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => TestDetailPage(test: test),
       ),
     );
+  }
+
+  void _navigateToCreatedTestDetail(DocumentReference test) async{
+
+    curr_quiz = await fetchQuizFromFirestore(test.id) as Quiz;
+
+    if(curr_quiz.isComplete == false) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CreateTestPage(flag: true),
+        ),
+      );
+    }
+    else {}
   }
 
   @override
@@ -152,15 +169,15 @@ class _HomePageState extends State<HomePage> {
                       itemBuilder: (context, index) {
                         int reverseIndex = createdTests.length - 1 - index;
 
-                        return GestureDetector(
-                          onTap: () => _navigateToTestDetail(createdTests[reverseIndex]),
-                          child: Card(
-                            child: Container(
-                              width: 150,
-                              padding: const EdgeInsets.all(8.0),
-                              child: Center(child: Text(createdTests[reverseIndex].toString())),
+                        return  Card(
+                            child: InkWell(
+                              onTap: () => _navigateToCreatedTestDetail(createdTests[reverseIndex]),
+                              child: Container(
+                                width: 150,
+                                padding: const EdgeInsets.all(8.0),
+                                child: Center(child: Text(createdTests[reverseIndex].toString())),
+                              ),
                             ),
-                          ),
                         );
                       },
                     ),
@@ -207,9 +224,9 @@ class CreateOrAnswerTestPage extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                onTestAnswered('Test ${DateTime.now()}');
+                //onTestAnswered('Test ${DateTime.now()}');
                 Navigator.pop(context);
-                //Navigator.push(context, MaterialPageRoute(builder: (context) => EnterTestCodeWidget()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => AnswerTestPage()));
               },
               child: const Text('Answer Test'),
             ),
@@ -229,10 +246,10 @@ class TestDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Test Detail'),
+        title: const Text('Test Detail'),
       ),
       body: Center(
-        child: Text(test, style: TextStyle(fontSize: 24)),
+        child: Text(test, style: const TextStyle(fontSize: 24)),
       ),
     );
   }
