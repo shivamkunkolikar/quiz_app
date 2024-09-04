@@ -16,8 +16,6 @@ void main() async{
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  //await prefs.setInt('counter', coun);
-
   final prefs = await SharedPreferences.getInstance();
   var tmpUsername = prefs.getString('username');
   var tmpEmail = prefs.getString('email');
@@ -30,7 +28,9 @@ void main() async{
     createdTests = doc['createdTests'];
     print(createdTests);
   }
+
   runApp(const MyApp());
+
 }
 
 class MyApp extends StatelessWidget {

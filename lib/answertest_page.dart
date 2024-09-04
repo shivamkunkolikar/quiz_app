@@ -12,6 +12,7 @@ class AnswerTestPage extends StatefulWidget {
 }
 
 class _AnswerTestPageState extends State<AnswerTestPage> {
+  
   final TextEditingController _testCodeController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -26,13 +27,17 @@ class _AnswerTestPageState extends State<AnswerTestPage> {
       DocumentSnapshot doc = await _firestore.collection('tests').doc(testCode).get();
 
       if (doc.exists) {
-        // Assuming you have a method to parse the data into a Quiz object
+
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         curr_quiz = Quiz.fromMap(doc.id, data);
         print('Quiz retrieved: ${curr_quiz.name}');
-        // Navigate to the quiz page or handle quiz data
-         Navigator.push(context, MaterialPageRoute(builder: (context) => QuizPage()));
 
+        if(curr_quiz.isActive == false) {
+          _showErrorMessage('The test is Currently Inactive');
+        }
+        else {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => TestHeadingPage(title: 'H',)));
+        }
 
       } else {
         _showErrorMessage('The test code entered does not exist.');
@@ -266,12 +271,35 @@ class _QuizPageState extends State<QuizPage> {
   int curr_ind = -1;
   void _setCurrInd(int curr, int index) {
     setState(() {
-      curr_quiz.ans_arr[curr] = index+1;
+      if(curr_quiz.que[curr-1].isMultipleCorrect == true) {
+        curr_quiz.que[curr-1].userAns[index] = curr_quiz.que[curr-1].userAns[index] ? false : true;
+      }
+      else {
+        for(int i=0 ; i<4 ; i++) {
+          curr_quiz.que[curr-1].userAns[i] = false;
+        }
+        curr_quiz.que[curr-1].userAns[index] = curr_quiz.que[curr-1].userAns[index] ? false : true;
+      }
     });
   }
 
+  void _clearAll() {
+    setState(() {
+        for(int i=0 ; i<4 ; i++) {
+          curr_quiz.que[curr_q-1].userAns[i] = false;
+        }
+      }
+    );
+  }
+
   dynamic retBgCol(int curr, int index) {
-    return index == curr_quiz.ans_arr[curr]-1 ? Colors.white : Colors.transparent;
+    // return index == curr_quiz.ans_arr[curr]-1 ? Colors.white : Colors.transparent;
+    if (curr_quiz.que[curr-1].userAns[index] == true) {
+      return Colors.white;
+    }
+    else {
+      return Colors.transparent;
+    }
   }
 
   @override
@@ -378,7 +406,7 @@ class _QuizPageState extends State<QuizPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               OutlinedButton(onPressed: () {
-                curr_quiz.ans_arr[curr_q] = 0;
+                 _clearAll();
               }, child: const Text('Clear')),
               Row(
                 children: [
@@ -447,7 +475,7 @@ class _QuizPageState extends State<QuizPage> {
                     ),
                     // Options Area
                     ListView.builder(
-                      itemCount: _newQuestion.opt.length-1,
+                      itemCount: _newQuestion.opt.length,
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
                         return GestureDetector(
@@ -528,4 +556,159 @@ class SubmitPage extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class TestHeadingPage extends StatefulWidget {
+  const TestHeadingPage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<TestHeadingPage> createState() => _TestHeadingPageState();
+}
+
+class _TestHeadingPageState extends State<TestHeadingPage> {
+  
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFF007A), Color(0xFFFF3939)]
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        // appBar: AppBar(
+        //   backgroundColor: Colors.transparent,
+        // ),
+        body: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Container(
+                height: 30,
+                color: Colors.transparent,
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+          
+              ),
+              Container(
+                height: 500,
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: const Color.fromRGBO(255, 255, 255, 0.6),
+                ),
+                child: const TestDiscription(test_heading: 'Test Head', test_info: 'test desc',),
+                
+              ),
+              Container(
+                height: 200,
+                width: double.infinity,
+                margin: const EdgeInsets.fromLTRB(10, 20, 10, 20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: const Color.fromRGBO(255, 255, 255, 0.6),
+                ),
+                child: TestStartInterface(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class TestDiscription extends StatelessWidget {
+  const TestDiscription({super.key, required String this.test_heading, required String this.test_info});
+  final String test_heading;
+  final String test_info;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        children: [
+          Text(curr_quiz.name),
+          Text('$test_info'),
+        ],
+      ),
+    );
+  }
+}
+
+class TestStartInterface extends StatelessWidget {
+  const TestStartInterface({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          const Text('Download Animation'),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => QuizPage()));
+            },
+             
+            child: const Text('Start Test'), 
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
 

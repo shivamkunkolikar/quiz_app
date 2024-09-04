@@ -16,6 +16,7 @@ class Question {
   List<String> opt;
   List<int> mks;
   List<bool> isCorrect;
+  List<bool> userAns = [false, false, false, false];
   bool isMultipleCorrect;
 
   Map<String, dynamic> toMap() {
