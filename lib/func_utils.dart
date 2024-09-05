@@ -1,5 +1,6 @@
 //import 'package:quiz_app/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 //import 'package:firebase_core/firebase_core.dart';
 //import 'firebase_options.dart';
 
@@ -29,6 +30,12 @@ class Question {
     };
   }
 
+  Map<String, dynamic> toAnswerMap() {
+    return {
+      'userAns': userAns
+    };
+  }
+
   factory Question.fromMap(Map<String, dynamic> map) {
     return Question(
       map['text'] as String,
@@ -38,6 +45,56 @@ class Question {
       map['isMultipleCorrect'] as bool,
     );
   }
+
+  bool checkifUnattemted() {
+    for(int i=0 ; i<4 ; i++) {
+      if(userAns[i] == true) return false;
+    }
+    return true;
+  }
+
+  double evalQuestion() {
+    if(isMultipleCorrect == false) {
+      if(listEquals(isCorrect, userAns)) {
+        return 0.0 + mks[0];
+      }
+      else if(checkifUnattemted()) {
+         return 0.0 + mks[2];
+      }
+      else {
+        return 0.0 + mks[1];
+      }
+    }
+    else {
+      if(checkifUnattemted()) {
+        return mks[2] + 0.0; 
+      }
+      else if(listEquals(isCorrect, userAns)) {
+        return mks[1] + 0.0;
+      }
+      else {
+        int cnt = 0;
+        for(int i=0 ; i<4 ; i++) {
+          if(isCorrect[i] == true) {
+            cnt = cnt + 1;
+          }
+        }
+
+        double atomMarks = mks[0] / cnt; 
+        double tot_marks = 0.0; 
+        for(int i=0 ; i<4  ; i++) {
+          if(isCorrect[i] == false && userAns[i] == true) {
+            return mks[1] + 0.0;
+          }
+          else if(isCorrect[i] == true && userAns[i] == true) {
+            tot_marks = tot_marks + atomMarks;
+          }
+        }
+        return tot_marks;
+      }
+    }
+  }
+
 }
 
 class Quiz {
@@ -49,7 +106,7 @@ class Quiz {
   int time;
   bool isActive = false;
   bool isComplete = false;
-  List<int> ans_arr = [];
+
 
   Question at_loc(int index) {
     return que[index - 1];
@@ -66,6 +123,14 @@ class Quiz {
     };
   }
 
+   Map<String, dynamic> toAnswerMap() {
+    return {
+      'username': username,
+      'marks': evaluateTest(),
+      'ans': que.map((q) => q.toAnswerMap()).toList(),
+    };
+  }
+
   factory Quiz.fromMap(String id, Map<String, dynamic> map) {
     return Quiz(
       id,
@@ -76,6 +141,28 @@ class Quiz {
       isComplete: map['isComplete']
     );
   }
+
+  int calcTotal() {
+    int ret = 0;
+    for(int i=0 ; i<que.length ; i++) {
+      ret = ret + que[i].mks[0];
+    }
+    return ret;
+  }
+
+  double evaluateTest() {
+    int len = que.length;
+    double marks = 0.0;
+
+    for(int i=0 ; i<len ; i++) {
+      marks = marks + que[i].evalQuestion();
+      print(' ${i+1}  ${marks}  ${que[i].evalQuestion()}');
+    }
+
+    return marks;
+
+  }
+
 }
 
 Future<void> saveQuizToFirestore(Quiz quiz) async {
@@ -131,3 +218,34 @@ Future<void> updateCreatedTestList(List<dynamic> newList) async {
     print('Error updating list: $e');
   }
 }
+
+Future<void> updateAnsweredTestList(List<dynamic> newList) async {
+  try {
+    
+    DocumentReference userDocRef = FirebaseFirestore.instance.collection('users').doc(username);
+    
+    await userDocRef.update({
+      'answeredTests': newList,
+    });
+
+    print('List updated successfully in Firestore.');
+  } catch (e) {
+    print('Error updating list: $e');
+  }
+}
+
+
+Future<void> saveResultToFirestore(Quiz quiz) async {
+
+  CollectionReference testsCollection = FirebaseFirestore.instance.collection('tests').doc(quiz.id).collection('results');
+
+  Map<String, dynamic> quizData = quiz.toAnswerMap();
+
+  try {
+    await testsCollection.doc(username).set(quizData);
+    print('Result saved successfully!');
+  } catch (e) {
+    print('Failed to save quiz: $e');
+  }
+}
+

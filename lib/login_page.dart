@@ -29,6 +29,7 @@ class _LoginPageState extends State<LoginPage> {
         if (storedPassword == password) {
           email = userDoc['email'];
           createdTests = userDoc['createdTests'];
+          answeredTests = userDoc['answeredTests'];
           return true;
         } else {
           return false;
@@ -53,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
     if(login_true) {
       setState(() { changeButton = true; });
       await Future.delayed(const Duration(seconds: 1));
-      //createdTests = await fetchListFromFirestore(username);
+      Navigator.pop(context);
       Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
       setState(() { changeButton = false; });
     }

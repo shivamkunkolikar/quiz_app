@@ -26,7 +26,8 @@ void main() async{
     final db = FirebaseFirestore.instance;
     final doc = await db.collection('users').doc(username).get();
     createdTests = doc['createdTests'];
-    print(createdTests);
+    answeredTests = doc['answeredTests'];
+    print(answeredTests);
   }
 
   runApp(const MyApp());

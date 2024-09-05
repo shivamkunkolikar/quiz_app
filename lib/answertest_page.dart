@@ -3,7 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:quiz_app/createtest_page.dart';
 import 'package:quiz_app/func_utils.dart';
+import 'package:quiz_app/home_page.dart';
 import 'dart:async';
+
+import 'package:quiz_app/result_page.dart';
 
 
 class AnswerTestPage extends StatefulWidget {
@@ -24,6 +27,7 @@ class _AnswerTestPageState extends State<AnswerTestPage> {
     }
 
     try {
+      DocumentReference docRef = FirebaseFirestore.instance.collection('tests').doc(testCode);
       DocumentSnapshot doc = await _firestore.collection('tests').doc(testCode).get();
 
       if (doc.exists) {
@@ -35,8 +39,11 @@ class _AnswerTestPageState extends State<AnswerTestPage> {
         if(curr_quiz.isActive == false) {
           _showErrorMessage('The test is Currently Inactive');
         }
+        else if(answeredTests.contains(docRef)) {
+          _showErrorMessage('Test Already Answered');
+        }
         else {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => TestHeadingPage(title: 'H',)));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const TestHeadingPage(title: 'H',)));
         }
 
       } else {
@@ -160,8 +167,8 @@ class FullScreenDrawer extends StatelessWidget {
         child: Column(
           children: [
             ListTile(
-              leading: Icon(Icons.arrow_back),
-              title: Text('Back'),
+              leading: const Icon(Icons.arrow_back),
+              title: const Text('Back'),
               onTap: () {
                 Navigator.of(context).pop();
               },
@@ -173,7 +180,7 @@ class FullScreenDrawer extends StatelessWidget {
                   crossAxisSpacing: 10.0,
                   mainAxisSpacing: 10.0,
                 ),
-                padding: EdgeInsets.all(10.0),
+                padding: const EdgeInsets.all(10.0),
                 itemCount: curr_quiz.que.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
@@ -250,7 +257,7 @@ class _QuizPageState extends State<QuizPage> {
 
   void _getQuestion(int index) {
     if (index > curr_quiz.que.length) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => SubmitPage()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => SubmitTestPage()));
     } else if (index < 1) {
       // Do nothing
     } else {
@@ -293,7 +300,6 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   dynamic retBgCol(int curr, int index) {
-    // return index == curr_quiz.ans_arr[curr]-1 ? Colors.white : Colors.transparent;
     if (curr_quiz.que[curr-1].userAns[index] == true) {
       return Colors.white;
     }
@@ -309,7 +315,8 @@ class _QuizPageState extends State<QuizPage> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFFF007A), Color(0xFFFF3939)],
+          // colors: [Color(0xFFFF007A), Color(0xFFFF3939)],
+          colors: [Color.fromARGB(255, 0, 148, 255), Color.fromARGB(255, 0, 148, 255)]
         ),
       ),
       child: Scaffold(
@@ -323,8 +330,8 @@ class _QuizPageState extends State<QuizPage> {
         child: Column(
           children: [
             ListTile(
-              leading: Icon(Icons.arrow_back),
-              title: Text('Back'),
+              leading: const Icon(Icons.arrow_back),
+              title: const Text('Back'),
               onTap: () {
                 Navigator.of(context).pop();
               },
@@ -336,7 +343,7 @@ class _QuizPageState extends State<QuizPage> {
                   crossAxisSpacing: 10.0,
                   mainAxisSpacing: 10.0,
                 ),
-                padding: EdgeInsets.all(10.0),
+                padding: const EdgeInsets.all(10.0),
                 itemCount: curr_quiz.que.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
@@ -357,8 +364,9 @@ class _QuizPageState extends State<QuizPage> {
               child: ElevatedButton(
                 onPressed: () {
                   print('Submit button pressed');
+                  Navigator.push(context, MaterialPageRoute(builder: (context) =>  SubmitTestPage()));
                 },
-                child: Text('Submit'),
+                child: const Text('Submit'),
               ),
             ),
           ],
@@ -413,7 +421,7 @@ class _QuizPageState extends State<QuizPage> {
                   ElevatedButton(
                     onPressed: () => _getQuestion(curr_q - 1),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromRGBO(255, 145, 0, 1),
+                      backgroundColor: const Color.fromRGBO(255, 145, 0, 1),
                     ),
                     child: const Text('Prev'),
                   ),
@@ -442,6 +450,7 @@ class _QuizPageState extends State<QuizPage> {
                 ),
                 margin: const EdgeInsets.fromLTRB(10, 20, 10, 20),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Question Container
                     Container(
@@ -473,6 +482,11 @@ class _QuizPageState extends State<QuizPage> {
                         ],
                       ),
                     ),
+
+                    _newQuestion.isMultipleCorrect 
+                    ? const Text('\n   Choose one or more options')
+                    : const Text('\n   Choose any one option'),
+
                     // Options Area
                     ListView.builder(
                       itemCount: _newQuestion.opt.length,
@@ -622,7 +636,7 @@ class _TestHeadingPageState extends State<TestHeadingPage> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFFF007A), Color(0xFFFF3939)]
+          colors: [Color(0xFF0094FF), Color(0xFF0094FF)]
         ),
       ),
       child: Scaffold(
@@ -648,7 +662,25 @@ class _TestHeadingPageState extends State<TestHeadingPage> {
                   borderRadius: BorderRadius.circular(20),
                   color: const Color.fromRGBO(255, 255, 255, 0.6),
                 ),
-                child: const TestDiscription(test_heading: 'Test Head', test_info: 'test desc',),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    const Text('Hello World'),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => QuizPage()));
+
+                      },
+                      
+                      child: const Text('Start Test'), 
+                    ),
+
+                  ],
+                ),
                 
               ),
               Container(
@@ -659,7 +691,7 @@ class _TestHeadingPageState extends State<TestHeadingPage> {
                   borderRadius: BorderRadius.circular(20),
                   color: const Color.fromRGBO(255, 255, 255, 0.6),
                 ),
-                child: TestStartInterface(),
+                // child: TestStartInterface(),
               ),
             ],
           ),
@@ -670,8 +702,7 @@ class _TestHeadingPageState extends State<TestHeadingPage> {
 }
 
 class TestDiscription extends StatelessWidget {
-  const TestDiscription({super.key, required String this.test_heading, required String this.test_info});
-  final String test_heading;
+  const TestDiscription({super.key, required String this.test_info});
   final String test_info;
 
   @override
@@ -709,6 +740,120 @@ class TestStartInterface extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class SubmitTestPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.blue, // Background color
+      body: Center(
+        child: Container(
+          width: double.infinity, // Edge insets of 10 from all sides
+          margin: const EdgeInsets.all(10.0),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.6), // White box with 60% transparency
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'Do You want to Submit Test?',
+                style: TextStyle(
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20.0),
+              Text(
+                'Total Questions       : 25\n'
+                'Attempted Questions   : 20\n'
+                'Unattempted Questions : 05',
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.left,
+              ),
+              const SizedBox(height: 20.0),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Go back to the previous page
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[300], // Background color for "Go Back" button
+                      foregroundColor: Colors.black, // Text color
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30.0, vertical: 15.0),
+                    ),
+                    child: Text('Go Back'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Placeholder for submit test logic
+                      final db = FirebaseFirestore.instance;
+                      saveResultToFirestore(curr_quiz);
+                      DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
+                      answeredTests.add(docRef);
+                      updateAnsweredTestList(answeredTests);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) =>  HomePage()));
+
+                      print("Test Submitted");
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green, // Background color for "Submit Test" button
+                      foregroundColor: Colors.white, // Text color
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30.0, vertical: 15.0),
+                    ),
+                    child: Text('Submit Test'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 
 

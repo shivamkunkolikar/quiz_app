@@ -3,6 +3,8 @@ import 'package:quiz_app/answertest_page.dart';
 import 'package:quiz_app/createtest_page.dart';
 //import 'package:quiz_app/main.dart';
 import 'package:quiz_app/func_utils.dart';
+import 'package:quiz_app/login_page.dart';
+import 'package:quiz_app/result_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -65,6 +67,21 @@ class _HomePageState extends State<HomePage> {
     else {}
   }
 
+  void _navigateToAnsweredTestDetail(DocumentReference test) async{
+
+    curr_quiz = await fetchQuizFromFirestore(test.id) as Quiz;
+
+    if(curr_quiz.isComplete == false) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResultPage(),
+        ),
+      );
+    }
+    else {}
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,6 +134,8 @@ class _HomePageState extends State<HomePage> {
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.remove('username');
                 await prefs.remove('email');
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
               },
             ),
           ],
@@ -140,13 +159,15 @@ class _HomePageState extends State<HomePage> {
                       scrollDirection: Axis.horizontal,
                       itemCount: answeredTests.length,
                       itemBuilder: (context, index) {
+                        int reverseIndex = answeredTests.length - 1 - index;
+
                         return GestureDetector(
-                          onTap: () => _navigateToTestDetail(answeredTests[index]),
+                          onTap: () => _navigateToAnsweredTestDetail(answeredTests[reverseIndex]),
                           child: Card(
                             child: Container(
                               width: 150,
                               padding: const EdgeInsets.all(8.0),
-                              child: Center(child: Text(answeredTests[index])),
+                              child: Center(child: Text(answeredTests[reverseIndex].toString())),
                             ),
                           ),
                         );
@@ -225,7 +246,6 @@ class CreateOrAnswerTestPage extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 //onTestAnswered('Test ${DateTime.now()}');
-                Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (context) => AnswerTestPage()));
               },
               child: const Text('Answer Test'),
