@@ -30,6 +30,15 @@ class _LoginPageState extends State<LoginPage> {
           email = userDoc['email'];
           createdTests = userDoc['createdTests'];
           answeredTests = userDoc['answeredTests'];
+          for(int i=0 ; i<createdTests.length ; i++) {
+            Map? tmp = await getDocField(createdTests[i]);
+            createdTestsObject.add(tmp);
+          }
+
+          for(int i=0 ; i<answeredTests.length ; i++) {
+            Map? tmp = await getDocField(answeredTests[i]);
+            answeredTestsObject.add(tmp);
+          }
           return true;
         } else {
           return false;
@@ -56,6 +65,7 @@ class _LoginPageState extends State<LoginPage> {
       await Future.delayed(const Duration(seconds: 1));
       Navigator.pop(context);
       Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+
       setState(() { changeButton = false; });
     }
     else {

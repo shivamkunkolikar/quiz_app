@@ -42,6 +42,9 @@ class _AnswerTestPageState extends State<AnswerTestPage> {
         else if(answeredTests.contains(docRef)) {
           _showErrorMessage('Test Already Answered');
         }
+        else if(curr_quiz.isComplete == false) {
+          _showErrorMessage('The test code entered does not exist.');
+        }
         else {
           Navigator.push(context, MaterialPageRoute(builder: (context) => const TestHeadingPage(title: 'H',)));
         }
@@ -201,7 +204,7 @@ class FullScreenDrawer extends StatelessWidget {
                 onPressed: () {
                   print('Submit button pressed');
                 },
-                child: Text('Submit'),
+                child: const Text('Submit'),
               ),
             ),
           ],
@@ -222,8 +225,8 @@ class QuizPage extends StatefulWidget {
 class _QuizPageState extends State<QuizPage> {
   Timer? _timer;
   int curr_q = 1;
-  int time_left = curr_quiz.time - 1; // Start from given time in minutes
-  int time_left_sec = 59; // Start seconds from 59
+  int time_left = curr_quiz.time - 1; 
+  int time_left_sec = 59; 
   Question _newQuestion = curr_quiz.at_loc(1);
 
   @override
@@ -527,6 +530,58 @@ class _QuizPageState extends State<QuizPage> {
                   ],
                 ),
               ),
+
+
+
+              Container(
+                width: double.infinity,
+                height: 80,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: const Color.fromRGBO(255, 255, 255, 0.6),
+                ),
+                margin: const EdgeInsets.fromLTRB(10, 20, 10, 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.done, color: Colors.green,),
+                        Text(': ${_newQuestion.mks[0]}', style: const TextStyle(
+                          fontSize: 20,
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),),
+                      ],
+                    ),
+
+                    Row(
+                      children: [
+                        const Icon(Icons.close, color: Colors.red,),
+                        Text(': ${_newQuestion.mks[1]}', style: const TextStyle(
+                          fontSize: 20,
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),),
+                      ],
+                    ),
+
+                    Row(
+                      children: [
+                        const Icon(Icons.format_underline_sharp, color: Colors.black,),
+                        Text(': ${_newQuestion.mks[2]}', style: const TextStyle(
+                          fontSize: 20,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+
+
             ],
           ),
         ),
@@ -543,33 +598,6 @@ class _QuizPageState extends State<QuizPage> {
 
 
 
-class SubmitPage extends StatelessWidget {
-  const SubmitPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Scaffold(
-        backgroundColor: const Color.fromRGBO(255, 255, 255, 0.5),
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          child: Center(
-            child: Container(
-              child: Column(
-                children: [
-                  const Text('Do You Want To Submit Test ? '),
-                  const ElevatedButton(onPressed: null, child: Text('Submit Test')),
-                  ElevatedButton(onPressed: () { Navigator.pop(context); }, child: const Text('Go Back')),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 
 
@@ -672,7 +700,7 @@ class _TestHeadingPageState extends State<TestHeadingPage> {
                         Navigator.pop(context);
                         Navigator.pop(context);
                         Navigator.pop(context);
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => QuizPage()));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const QuizPage()));
 
                       },
                       
@@ -730,7 +758,7 @@ class TestStartInterface extends StatelessWidget {
           const Text('Download Animation'),
           ElevatedButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => QuizPage()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const QuizPage()));
             },
              
             child: const Text('Start Test'), 
@@ -774,20 +802,20 @@ class SubmitTestPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue, // Background color
+      backgroundColor: Colors.blue, 
       body: Center(
         child: Container(
-          width: double.infinity, // Edge insets of 10 from all sides
+          width: double.infinity, 
           margin: const EdgeInsets.all(10.0),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.6), // White box with 60% transparency
+            color: Colors.white.withOpacity(0.6), 
             borderRadius: BorderRadius.circular(20.0),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
+              const Text(
                 'Do You want to Submit Test?',
                 style: TextStyle(
                   fontSize: 24.0,
@@ -798,10 +826,10 @@ class SubmitTestPage extends StatelessWidget {
               ),
               const SizedBox(height: 20.0),
               Text(
-                'Total Questions       : 25\n'
+                'Total Questions       : ${curr_quiz.que.length}\n'
                 'Attempted Questions   : 20\n'
                 'Unattempted Questions : 05',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18.0,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -812,37 +840,40 @@ class SubmitTestPage extends StatelessWidget {
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
+                  OutlinedButton(
                     onPressed: () {
-                      Navigator.pop(context); // Go back to the previous page
+                      Navigator.pop(context); 
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[300], // Background color for "Go Back" button
-                      foregroundColor: Colors.black, // Text color
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30.0, vertical: 15.0),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: Colors.grey[300], 
+                      foregroundColor: Colors.black, 
+                      padding: const EdgeInsets.symmetric( horizontal: 15.0, vertical: 15.0),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                     ),
-                    child: Text('Go Back'),
+                    child: const Text('Go Back'),
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      // Placeholder for submit test logic
+                    onPressed: () async{
+                      
                       final db = FirebaseFirestore.instance;
                       saveResultToFirestore(curr_quiz);
                       DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
                       answeredTests.add(docRef);
                       updateAnsweredTestList(answeredTests);
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                      await updateHomeInfo();
                       Navigator.push(context, MaterialPageRoute(builder: (context) =>  HomePage()));
 
                       print("Test Submitted");
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green, // Background color for "Submit Test" button
-                      foregroundColor: Colors.white, // Text color
+                      backgroundColor: Colors.green, 
+                      foregroundColor: Colors.white, 
                       padding: const EdgeInsets.symmetric(
                           horizontal: 30.0, vertical: 15.0),
                     ),
-                    child: Text('Submit Test'),
+                    child: const Text('Submit Test'),
                   ),
                 ],
               ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/answertest_page.dart';
 import 'package:quiz_app/createtest_page.dart';
-//import 'package:quiz_app/main.dart';
+import 'package:quiz_app/main.dart';
 import 'package:quiz_app/func_utils.dart';
 import 'package:quiz_app/login_page.dart';
 import 'package:quiz_app/result_page.dart';
+import 'package:quiz_app/testadmin_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -64,22 +65,32 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     }
-    else {}
+    else {
+      isActive = curr_quiz.isActive;
+      await getResultsInDescendingOrder(curr_quiz.id);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TestadminPage(testId: test.id.toString()),
+        ),
+      );
+    }
   }
 
   void _navigateToAnsweredTestDetail(DocumentReference test) async{
 
     curr_quiz = await fetchQuizFromFirestore(test.id) as Quiz;
+    await fetchUserAnswers();
 
-    if(curr_quiz.isComplete == false) {
+   
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => ResultPage(),
         ),
       );
-    }
-    else {}
+    
+  
   }
 
   @override
@@ -142,68 +153,120 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Answered Tests', style: TextStyle(fontSize: 18)),
-            answeredTests.isEmpty
-                ? const SizedBox(
-                    height: 100,
-                    child: Center(child: Text('No Tests Answered')),      
-                  )
-                : Container(
-                    height: 100,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: answeredTests.length,
-                      itemBuilder: (context, index) {
-                        int reverseIndex = answeredTests.length - 1 - index;
-
-                        return GestureDetector(
-                          onTap: () => _navigateToAnsweredTestDetail(answeredTests[reverseIndex]),
-                          child: Card(
-                            child: Container(
-                              width: 150,
-                              padding: const EdgeInsets.all(8.0),
-                              child: Center(child: Text(answeredTests[reverseIndex].toString())),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-            const SizedBox(height: 20),
-            const Text('Created Tests', style: TextStyle(fontSize: 18)),
-            createdTests.isEmpty
-                ? const SizedBox(
-                    height: 100,
-                    child: Center(child: Text('No Tests Created')),      
-                  )
-                : Container(
-                    height: 100,
-                    child: ListView.builder(
-                      
-                      scrollDirection: Axis.horizontal,
-                      itemCount: createdTests.length,
-                      itemBuilder: (context, index) {
-                        int reverseIndex = createdTests.length - 1 - index;
-
-                        return  Card(
-                            child: InkWell(
-                              onTap: () => _navigateToCreatedTestDetail(createdTests[reverseIndex]),
-                              child: Container(
-                                width: 150,
-                                padding: const EdgeInsets.all(8.0),
-                                child: Center(child: Text(createdTests[reverseIndex].toString())),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10.0, 30, 10, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Answered Tests', style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w500,
+              )),
+              answeredTests.isEmpty
+                  ? const SizedBox(
+                      height: 200,
+                      child: Center(child: Text('No Tests Answered')),      
+                    )
+                  : Container(
+                      margin: const EdgeInsets.fromLTRB(0, 5, 0, 30),
+                      height: 200,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: answeredTests.length,
+                        itemBuilder: (context, index) {
+                          int reverseIndex = answeredTests.length - 1 - index;
+        
+                          return Card(
+                              color: const Color.fromRGBO(179, 223, 255, 1),
+                              child: InkWell(
+                                onTap: () => _navigateToAnsweredTestDetail(answeredTests[reverseIndex]),
+                                child: Container(
+                                  width: 150,
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        height: 140,
+                                        width: double.infinity,
+                                        margin: const EdgeInsets.fromLTRB(2, 2, 2, 10),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: Colors.transparent),
+                                          borderRadius: BorderRadius.circular(10),
+                                          color: Colors.white
+                                        ),
+                                        child: const Icon(Icons.text_snippet_outlined, size: 100, color: Color.fromRGBO(128, 202, 255, 1),),
+                                      ),
+        
+                                      Text(answeredTestsObject[reverseIndex]['name'], style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
-                        );
-                      },
+                            );
+                        },
+                      ),
                     ),
-                  ),
-          ],
+              const SizedBox(height: 20),
+              const Text('Created Tests', style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w500,
+              )),
+              createdTests.isEmpty
+                  ? const SizedBox(
+                      height: 200,
+                      child: Center(child: Text('No Tests Created')),      
+                    )
+                  : Container(
+                      margin: EdgeInsets.fromLTRB(0 , 5, 0, 0),
+                      height: 200,
+                      child: ListView.builder(
+                        
+                        scrollDirection: Axis.horizontal,
+                        itemCount: createdTests.length,
+                        itemBuilder: (context, index) {
+                          int reverseIndex = createdTests.length - 1 - index;
+        
+                          return Card(
+                              color: const Color.fromRGBO(179, 223, 255, 1),
+                              child: InkWell(
+                                onTap: () => _navigateToCreatedTestDetail(createdTests[reverseIndex]),
+                                child: Container(
+                                  width: 150,
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        height: 140,
+                                        width: double.infinity,
+                                        margin: const EdgeInsets.fromLTRB(2, 2, 2, 10),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: Colors.transparent),
+                                          borderRadius: BorderRadius.circular(10),
+                                          color: Colors.white
+                                        ),
+                                        child: const Icon(Icons.text_snippet_outlined, size: 100, color: Color.fromRGBO(128, 202, 255, 1),),
+                                      ),
+        
+                                      Text(createdTestsObject[reverseIndex]['name'], style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                        },
+                      ),
+                    ),
+            ],
+          ),
         ),
       ),
 

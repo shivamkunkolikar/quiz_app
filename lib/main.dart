@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:quiz_app/home_page.dart';
+import 'package:quiz_app/testadmin_page.dart';
 import 'firebase_options.dart';
 //import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:quiz_app/func_utils.dart';
@@ -16,19 +17,7 @@ void main() async{
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  final prefs = await SharedPreferences.getInstance();
-  var tmpUsername = prefs.getString('username');
-  var tmpEmail = prefs.getString('email');
-  if(tmpUsername != null && tmpEmail != null) {
-    username = tmpUsername;
-    email = tmpEmail;
-
-    final db = FirebaseFirestore.instance;
-    final doc = await db.collection('users').doc(username).get();
-    createdTests = doc['createdTests'];
-    answeredTests = doc['answeredTests'];
-    print(answeredTests);
-  }
+  await updateHomeInfo();
 
   runApp(const MyApp());
 
@@ -52,6 +41,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       // home: const MyHomePage(title: 'Flutter Demo Home Page')
       home: username == '' ? LoginPage() : HomePage(),
+      // home: ResultListPage(),
+      // home: TestadminPage(testId: 'XHQih2i0lZ6LsdePiKtx'),
       // home: HomePage(),
 
     );

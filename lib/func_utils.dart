@@ -3,12 +3,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 //import 'package:firebase_core/firebase_core.dart';
 //import 'firebase_options.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 String username = '';
 String password = "";
 String email = '';
 List<dynamic> createdTests = [];
 List<dynamic> answeredTests = [];
+List<dynamic> createdTestsObject = [];
+List<dynamic> answeredTestsObject = [];
+List<dynamic> resultList = [];
+// List<Result> resultList = [
+//   Result(id: 'User 1', marks: 80, ans:[]),
+//   Result(id: 'User 2', marks: 78, ans:[]),
+//   Result(id: 'User 3', marks: 60, ans:[]),
+//   Result(id: 'User 4', marks: 58, ans:[]),
+// ];
+
+Quiz curr_quiz = Quiz('', '', [], -1);
 
 class Question {
   Question(this.text, this.opt, this.mks, this.isCorrect, this.isMultipleCorrect);
@@ -165,6 +177,51 @@ class Quiz {
 
 }
 
+
+class Result {
+  String id;
+  int marks;
+  dynamic ans = [];
+
+  Result({required this.id, required this.marks, required this.ans});
+
+
+  factory Result.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    return Result(
+      id: doc.id,
+      marks: data['marks'],
+      ans: data['ans']
+    );
+  }
+}
+
+Future<void> updateHomeInfo() async{
+  final prefs = await SharedPreferences.getInstance();
+  var tmpUsername = prefs.getString('username');
+  var tmpEmail = prefs.getString('email');
+  if(tmpUsername != null && tmpEmail != null) {
+    username = tmpUsername;
+    email = tmpEmail;
+
+    final db = FirebaseFirestore.instance;
+    final doc = await db.collection('users').doc(username).get();
+    createdTests = doc['createdTests'];
+    answeredTests = doc['answeredTests'];
+    print(answeredTests);
+  }
+
+  for(int i=0 ; i<createdTests.length ; i++) {
+    Map? tmp = await getDocField(createdTests[i]);
+    createdTestsObject.add(tmp);
+  }
+
+  for(int i=0 ; i<answeredTests.length ; i++) {
+    Map? tmp = await getDocField(answeredTests[i]);
+    answeredTestsObject.add(tmp);
+  }
+}
+
 Future<void> saveQuizToFirestore(Quiz quiz) async {
 
   CollectionReference testsCollection = FirebaseFirestore.instance.collection('tests');
@@ -249,3 +306,112 @@ Future<void> saveResultToFirestore(Quiz quiz) async {
   }
 }
 
+
+Future<int> getNumberOfResults(String quizId) async {
+  try {
+    
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('tests')
+        .doc(quizId)
+        .collection('results')
+        .get();
+
+    print(querySnapshot);
+    return querySnapshot.docs.length;
+  } catch (error) {
+    print('Error getting number of results: $error');
+    return 0; // Return 0 in case of an error
+  }
+}
+
+
+Future<Map?> getDocField(DocumentReference docRef) async {
+  try {
+    
+    DocumentSnapshot docSnapshot = await docRef.get();
+
+  
+    if (docSnapshot.exists && docSnapshot.data() != null) {
+      
+      return {
+        'name': docSnapshot.get('name'),
+        'isActive': docSnapshot.get('isActive'),
+        'isComplete': docSnapshot.get('isComplete'),
+      };
+
+    } else {
+      print('Document does not exist or does not contain the name field');
+      return null; 
+    }
+  } catch (error) {
+    print('Error retrieving name field: $error');
+    return null;  
+  }
+}
+
+
+Future<void> getResultsInDescendingOrder(String quizId) async {
+
+  try {
+  
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('tests')
+        .doc(quizId)
+        .collection('results')
+        .orderBy('marks', descending: true)  
+        .get();
+
+    
+    for (var doc in querySnapshot.docs) {
+      resultList.add(Result.fromFirestore(doc));
+    }
+
+  
+  } catch (e) {
+    print('Error retrieving results: $e');
+  }
+}
+
+
+// Future<void> fetchUserAnswers() async{
+
+//   try {
+    
+//     final db = FirebaseFirestore.instance;
+//     DocumentReference docRef = db.collection('tests').doc(curr_quiz.id).collection('results').doc(username);
+//     DocumentSnapshot docSnapshot = await docRef.get();
+//     List<dynamic> tmpUserAns = docSnapshot.get('ans');
+
+//     for(int i=0 ; i<curr_quiz.que.length ; i++) {
+//       if(tmpUserAns[i]['userAns'] != null) {
+//         curr_quiz.que[i].userAns = tmpUserAns[i]['userAns'] as List<bool>;
+//       }
+//     }    
+
+//   }
+//   catch(e) {
+//     print('Error in results : $e');
+//   }
+// }
+
+Future<void> fetchUserAnswers() async {
+  try {
+    final db = FirebaseFirestore.instance;
+    DocumentReference docRef =
+        db.collection('tests').doc(curr_quiz.id).collection('results').doc(username);
+    DocumentSnapshot docSnapshot = await docRef.get();
+
+    List<dynamic> tmpUserAns = docSnapshot.get('ans');
+
+    for (int i = 0; i < curr_quiz.que.length; i++) {
+      if (tmpUserAns[i]['userAns'] != null) {
+        // Ensure that each dynamic value is explicitly cast to bool
+        curr_quiz.que[i].userAns = (tmpUserAns[i]['userAns'] as List<dynamic>)
+            .map((e) => e as bool)
+            .toList();
+      }
+    }
+  } catch (e) {
+    print('Error in results : $e');
+  }
+}

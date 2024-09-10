@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:quiz_app/func_utils.dart';
 
-Quiz curr_quiz = Quiz('', '', [], -1);
+
 
 
 // Global variable to store total marks for correct answers of all questions
@@ -422,16 +422,26 @@ class _CreateTestPageState extends State<CreateTestPage> {
     // Logic to edit questions
     print("Edit Questions button pressed");
 
-    Navigator.push(context, MaterialPageRoute(builder: (context) => QuizInputPage()));
+    //Navigator.push(context, MaterialPageRoute(builder: (context) => QuizInputPage()));
+    saveQuizToFirestore(curr_quiz);
+    final db = FirebaseFirestore.instance;
+    DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
+    if(createdTests.contains(docRef) == false) {
+      createdTests.add(docRef);
+      updateCreatedTestList(createdTests);
+    }
 
   }
 
   void _createTest() {
     // Logic to create the test
+    curr_quiz.isComplete = true;
     saveQuizToFirestore(curr_quiz);
     final db = FirebaseFirestore.instance;
     DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
-    createdTests.add(docRef);
+    if(!createdTests.contains(docRef)) {
+      createdTests.add(docRef);
+    }
     updateCreatedTestList(createdTests);
     print("Create Test button pressed");
   }
@@ -452,7 +462,13 @@ class _CreateTestPageState extends State<CreateTestPage> {
   @override
   Widget build(BuildContext context) {
 
-    
+    if(curr_quiz.name != '') {
+      _testNameController.text = curr_quiz.name;
+    }
+
+    if(curr_quiz.time != -1) {
+      _testDurationController.text = curr_quiz.time.toString();
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -512,8 +528,8 @@ class _CreateTestPageState extends State<CreateTestPage> {
             const SizedBox(height: 16.0),
             ElevatedButton.icon(
               onPressed: _editQuestions,
-              icon: const Icon(Icons.edit),
-              label: const Text('Edit Questions'),
+              icon: const Icon(Icons.save_outlined),
+              label: const Text('Save Quiz'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue, // Button color
                 foregroundColor: Colors.white, // Text color
