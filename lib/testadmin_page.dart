@@ -4,6 +4,7 @@ import 'package:quiz_app/func_utils.dart';
 import 'package:quiz_app/createtest_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:quiz_app/result_page.dart';
 
 bool isActive = false; 
 int noofUsers = 0;
@@ -358,12 +359,13 @@ class _ResultListPageState extends State<ResultListPage> {
                               fontWeight: FontWeight.bold,
                               fontSize: 20
                             )),
-                        onTap: () {
+                        onTap: () async{
                           // Placeholder for navigating to another page when clicked
+                          await fetchUserAnswers(result.id);
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => PlaceholderPage(result: result),
+                              builder: (context) => StatusPage(),
                             ),
                           );
                         },

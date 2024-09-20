@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:quiz_app/home_page.dart';
 //import 'package:firebase_core/firebase_core.dart';
@@ -6,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:project/utils/routes.dart';
 import 'package:quiz_app/func_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quiz_app/signup_page.dart'; // Import the sign-up page
 
 
 class LoginPage extends StatefulWidget {
@@ -14,12 +16,12 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  String name = "";
+  String username = "";
+  String password = "";
   bool changeButton = false;
-  bool login_true = false;
-  // final _formKey = GlobalKey<FormState>();
+  bool isLoggedIn = false;
 
-  Future<bool> is_correct(username, password) async{
+  Future<bool> is_correct(String username, String password) async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       DocumentSnapshot userDoc = await firestore.collection('users').doc(username).get();
@@ -28,17 +30,9 @@ class _LoginPageState extends State<LoginPage> {
         String storedPassword = userDoc['password'];
         if (storedPassword == password) {
           email = userDoc['email'];
-          createdTests = userDoc['createdTests'];
-          answeredTests = userDoc['answeredTests'];
-          for(int i=0 ; i<createdTests.length ; i++) {
-            Map? tmp = await getDocField(createdTests[i]);
-            createdTestsObject.add(tmp);
-          }
-
-          for(int i=0 ; i<answeredTests.length ; i++) {
-            Map? tmp = await getDocField(answeredTests[i]);
-            answeredTestsObject.add(tmp);
-          }
+          final prefs = await SharedPreferences.getInstance();
+          prefs.setString('username', username);
+          prefs.setString('email', email);
           return true;
         } else {
           return false;
@@ -46,32 +40,26 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         return false;
       }
-    
     } catch (e) {
       print('Error fetching user credentials: $e');
       return false;
     }
-
   }
 
+
   moveToHome(BuildContext context) async {
-    login_true = await is_correct(username, password);
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString('username', username);
-    prefs.setString('email', email);
+    isLoggedIn = await is_correct(username, password);
+    
     print(username);
-    if(login_true) {
-      setState(() { changeButton = true; });
-      await Future.delayed(const Duration(seconds: 1));
+    if(isLoggedIn) {
+      await updateHomeInfo();
       Navigator.pop(context);
       Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
-
-      setState(() { changeButton = false; });
     }
     else {
-      setState(() { changeButton = true; });
-      await Future.delayed(const Duration(seconds: 1));
-      setState(() { changeButton = false; });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Incorrect Username or Password')),
+      );
     }
   }
 
@@ -79,89 +67,147 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        child: Material(
-          color: Colors.white,
+        child: Container(
+          width: double.infinity, 
+          height: MediaQuery.of(context).size.height, 
+          color: const Color(0xFF00A1E4), 
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-
-              const SizedBox(height: 20), // Add space between the image and text
-              
-              Text(
-                "Welcome $name",
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: 24.0),
+                color: const Color(0xFFB3E5FC),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20),
 
-              const SizedBox(height: 20), // Add space between text and form fields
-              
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0, vertical: 32.0),
-                child: Column(
-                  children: [
-                    TextFormField(
-                      decoration: const InputDecoration(
-                        hintText: "Enter username",
-                        labelText: "Username",
+                      const Text(
+                        "Sign In",
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                        textAlign: TextAlign.left,
                       ),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return "Username cannot be empty";
-                        }
-                        return null;
-                      },
-                      onChanged: (value) {
-                        name = value;
-                        username = value;
-                        setState(() {});
-                      },
-                    ),
 
-                    TextFormField(
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        hintText: "Enter password",
-                        labelText: "Password",
-                      ),
-                      onChanged: (value) {
-                        password = value;
-                      },
-              
-                    ),
+                      const SizedBox(height: 8),
 
-                    const SizedBox(height: 20),
-
-                    Material(
-                      color: Colors.deepPurple,
-                      borderRadius: BorderRadius.circular(changeButton ? 50 : 8),
-                      child: InkWell(
-                        splashColor: const Color.fromARGB(255, 126, 90, 189),
-                        onTap: () => moveToHome(context),
-                        child: AnimatedContainer(
-                          duration: const Duration(seconds: 1),
-                          width: changeButton ? 90 : 140,
-                          height: 50,
-                          alignment: Alignment.center,
-                          child: changeButton
-                              ? login_true ? 
-                                  const Icon(Icons.done, color: Colors.white,)
-                                : const Icon(Icons.close, color: Colors.white,)
-                              : const Text(
-                                  "Login",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 17),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          const Text("Don't have an account? "),
+                          GestureDetector(
+                            onTap: () {
+                              // Navigate to the sign-up page
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SignupPage(), // Navigate to SignUpPage
                                 ),
+                              );
+                            },
+                            child: const Text(
+                              "Sign Up",
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          hintText: "Enter username",
+                          labelText: "Username",
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          // Handle changes
+                          username = value;
+                        },
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      TextFormField(
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          hintText: "Enter password",
+                          labelText: "Password",
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          password = value;
+                        },
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      Material(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(8),
+                        child: InkWell(
+                          onTap: () {
+                            moveToHome(context);
+                          },
+                          child: const SizedBox(
+                            height: 50,
+                            width: double.infinity,
+                            child: Center(
+                              child: Text(
+                                "Sign In",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+
+                      const SizedBox(height: 16),
+
+                      GestureDetector(
+                        onTap: () {
+                          // Navigate to forgot password
+                        },
+                        child: const Text(
+                          "Forgot Password?",
+                          style: TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                            decorationColor: Colors.blue,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               ),
-            
             ],
           ),
         ),

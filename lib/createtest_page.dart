@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:quiz_app/func_utils.dart';
+import 'package:quiz_app/home_page.dart';
+import 'package:flutter/foundation.dart';
 
 
 
@@ -411,6 +413,15 @@ class _CreateTestPageState extends State<CreateTestPage> {
   final TextEditingController _testNameController = TextEditingController();
   final TextEditingController _testDurationController = TextEditingController();
 
+  bool mapExistsInList(Map<String, dynamic> map, List<dynamic> mapList) {
+    for (var element in mapList) {
+      if (mapEquals(element, map)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   void _addQuestions() {
     print("Add Questions button pressed");
 
@@ -418,32 +429,35 @@ class _CreateTestPageState extends State<CreateTestPage> {
 
   }
 
-  void _editQuestions() {
-    // Logic to edit questions
-    print("Edit Questions button pressed");
+  void _saveQuiz() async{
 
-    //Navigator.push(context, MaterialPageRoute(builder: (context) => QuizInputPage()));
-    saveQuizToFirestore(curr_quiz);
+    print("Save Questions button pressed");
+
+
+    await saveQuizToFirestore(curr_quiz);
     final db = FirebaseFirestore.instance;
     DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
-    if(createdTests.contains(docRef) == false) {
-      createdTests.add(docRef);
-      updateCreatedTestList(createdTests);
+    if(mapExistsInList({'ref': docRef, 'name': curr_quiz.name}, createdTests) == false) {
+      createdTests.add({'ref': docRef, 'name': curr_quiz.name});
+      await updateCreatedTestList(createdTests);
     }
-
+    Navigator.pop(context);
+    Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
   }
 
-  void _createTest() {
+  void _createTest() async{
     // Logic to create the test
     curr_quiz.isComplete = true;
-    saveQuizToFirestore(curr_quiz);
+    await saveQuizToFirestore(curr_quiz);
     final db = FirebaseFirestore.instance;
     DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
-    if(!createdTests.contains(docRef)) {
-      createdTests.add(docRef);
+    if(!mapExistsInList({'ref': docRef, 'name': curr_quiz.name}, createdTests)) {
+      createdTests.add({'ref': docRef, 'name': curr_quiz.name});
     }
-    updateCreatedTestList(createdTests);
+    await updateCreatedTestList(createdTests);
     print("Create Test button pressed");
+    Navigator.pop(context);
+    Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
   }
 
   // void getData(ind) async{
@@ -527,7 +541,7 @@ class _CreateTestPageState extends State<CreateTestPage> {
             ),
             const SizedBox(height: 16.0),
             ElevatedButton.icon(
-              onPressed: _editQuestions,
+              onPressed: _saveQuiz,
               icon: const Icon(Icons.save_outlined),
               label: const Text('Save Quiz'),
               style: ElevatedButton.styleFrom(

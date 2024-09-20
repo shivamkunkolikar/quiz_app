@@ -265,6 +265,7 @@ class _QuizPageState extends State<QuizPage> {
       // Do nothing
     } else {
       curr_q = index;
+      curr_quiz.que[index-1].isVisited = true;
       setState(() {
         _newQuestion = curr_quiz.at_loc(index);
       });
@@ -311,6 +312,29 @@ class _QuizPageState extends State<QuizPage> {
     }
   }
 
+  dynamic retGridBg(int curr) {
+    if(curr == 1) {
+      if(curr_quiz.que[curr - 1].checkifUnattemted()){
+        return Colors.red;
+      }
+      else {
+        return Colors.green;
+      }
+
+    }
+    else if(curr_quiz.que[curr - 1].isVisited == false) {
+      return Colors.grey[350];
+    }
+    else {
+      if(curr_quiz.que[curr - 1].checkifUnattemted()) {
+        return Colors.red;
+      }
+      else {
+        return Colors.green;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -352,9 +376,11 @@ class _QuizPageState extends State<QuizPage> {
                   return GestureDetector(
                     onTap: () {
                       _getQuestion(index+1);
+                      curr_quiz.que[index].isVisited = true;
                       Navigator.pop(context);
                     },
                     child: CircleAvatar(
+                      backgroundColor: retGridBg(index + 1),
                       radius: 5,
                       child: Text('${index + 1}'),
                     ),
@@ -429,7 +455,11 @@ class _QuizPageState extends State<QuizPage> {
                     child: const Text('Prev'),
                   ),
                   ElevatedButton(
-                    onPressed: () => _getQuestion(curr_q + 1),
+                    onPressed: () {
+                      
+                      _getQuestion(curr_q + 1);
+
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromRGBO(6, 189, 0, 1),
                     ),
@@ -535,12 +565,12 @@ class _QuizPageState extends State<QuizPage> {
 
               Container(
                 width: double.infinity,
-                height: 80,
+                height: 50,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   color: const Color.fromRGBO(255, 255, 255, 0.6),
                 ),
-                margin: const EdgeInsets.fromLTRB(10, 20, 10, 20),
+                margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -827,8 +857,8 @@ class SubmitTestPage extends StatelessWidget {
               const SizedBox(height: 20.0),
               Text(
                 'Total Questions       : ${curr_quiz.que.length}\n'
-                'Attempted Questions   : 20\n'
-                'Unattempted Questions : 05',
+                'Attempted Questions   : ${curr_quiz.calcAttemted()}\n'
+                'Unattempted Questions : ${curr_quiz.calcUnattemted()}',
                 style: const TextStyle(
                   fontSize: 18.0,
                   fontWeight: FontWeight.bold,
@@ -856,13 +886,13 @@ class SubmitTestPage extends StatelessWidget {
                     onPressed: () async{
                       
                       final db = FirebaseFirestore.instance;
-                      saveResultToFirestore(curr_quiz);
+                      await saveResultToFirestore(curr_quiz);
                       DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
-                      answeredTests.add(docRef);
-                      updateAnsweredTestList(answeredTests);
-                      Navigator.pop(context);
-                      Navigator.pop(context);
+                      answeredTests.add({'ref': docRef, 'name': curr_quiz.name});
+                      await updateAnsweredTestList(answeredTests);
                       await updateHomeInfo();
+                      Navigator.pop(context);
+                      Navigator.pop(context);
                       Navigator.push(context, MaterialPageRoute(builder: (context) =>  HomePage()));
 
                       print("Test Submitted");
