@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/func_utils.dart';
+import 'package:quiz_app/home_page.dart';
+import 'package:quiz_app/login_page.dart';
 
 class SignupPage extends StatefulWidget {
   @override
@@ -50,6 +52,7 @@ class _SignupPageState extends State<SignupPage> {
       bool isSuccess = await addUserToFirestore();
       if(isSuccess) {
         // goto success page
+         Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
       }
       else {
         ScaffoldMessenger.of(context).showSnackBar(

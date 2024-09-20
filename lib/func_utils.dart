@@ -278,7 +278,7 @@ class Quiz {
 
 class Result {
   String id;
-  int marks;
+  double marks;
   dynamic ans = [];
 
   Result({required this.id, required this.marks, required this.ans});
@@ -543,6 +543,8 @@ Future<bool> addUserToFirestore() async{
     'name': name,
     'phno': phno,
     'institute': institute,
+    'createdTests': [],
+    'answeredTests': [],
   };
 
   try {
