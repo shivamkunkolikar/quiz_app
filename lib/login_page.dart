@@ -8,7 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:quiz_app/func_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quiz_app/signup_page.dart'; // Import the sign-up page
-
+import 'package:quiz_app/forgot_password.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -191,6 +191,12 @@ class _LoginPageState extends State<LoginPage> {
                       GestureDetector(
                         onTap: () {
                           // Navigate to forgot password
+                            Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ForgotPasswordPage(),
+                            ),
+                            );
                         },
                         child: const Text(
                           "Forgot Password?",
