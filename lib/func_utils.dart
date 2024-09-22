@@ -8,10 +8,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 String username = '';
 String password = "";
 String email = '';
+String name = '';
+String phno = '';
+String institute = '';
 List<dynamic> createdTests = [];
 List<dynamic> answeredTests = [];
-List<dynamic> createdTestsObject = [];
-List<dynamic> answeredTestsObject = [];
 List<dynamic> resultList = [];
 // List<Result> resultList = [
 //   Result(id: 'User 1', marks: 80, ans:[]),
@@ -31,6 +32,7 @@ class Question {
   List<bool> isCorrect;
   List<bool> userAns = [false, false, false, false];
   bool isMultipleCorrect;
+  bool isVisited = false;
 
   Map<String, dynamic> toMap() {
     return {
@@ -82,7 +84,7 @@ class Question {
         return mks[2] + 0.0; 
       }
       else if(listEquals(isCorrect, userAns)) {
-        return mks[1] + 0.0;
+        return mks[0] + 0.0;
       }
       else {
         int cnt = 0;
@@ -103,6 +105,48 @@ class Question {
           }
         }
         return tot_marks;
+      }
+    }
+  }
+
+  String returnStatus() {
+    if(isMultipleCorrect == false) {
+      if(listEquals(isCorrect, userAns)) {
+        return 'Correct';
+      }
+      else if(checkifUnattemted()) {
+        return 'Unattemted';
+      }
+      else {
+        return 'Wrong';
+      }
+    }
+    else {
+      if(checkifUnattemted()) {
+        return 'Unattemted'; 
+      }
+      else if(listEquals(isCorrect, userAns)) {
+        return 'Correct';
+      }
+      else {
+        int cnt = 0;
+        for(int i=0 ; i<4 ; i++) {
+          if(isCorrect[i] == true) {
+            cnt = cnt + 1;
+          }
+        }
+
+        double atomMarks = mks[0] / cnt; 
+        double tot_marks = 0.0; 
+        for(int i=0 ; i<4  ; i++) {
+          if(isCorrect[i] == false && userAns[i] == true) {
+            return 'Wrong';
+          }
+          else if(isCorrect[i] == true && userAns[i] == true) {
+            tot_marks = tot_marks + atomMarks;
+          }
+        }
+        return 'Partial Correct';
       }
     }
   }
@@ -162,6 +206,26 @@ class Quiz {
     return ret;
   }
 
+  int calcUnattemted() {
+    int cnt = 0;
+    for(int i=0 ; i<que.length ; i++) {
+      if (que[i].checkifUnattemted()) {
+        cnt = cnt  + 1;
+      }
+    }
+    return cnt;
+  }
+
+  int calcAttemted() {
+    int cnt = 0;
+    for(int i=0 ; i<que.length ; i++) {
+      if (!que[i].checkifUnattemted()) {
+        cnt = cnt  + 1;
+      }
+    }
+    return cnt;
+  }
+
   double evaluateTest() {
     int len = que.length;
     double marks = 0.0;
@@ -175,12 +239,46 @@ class Quiz {
 
   }
 
+  double evaluteAccuracy() {
+    int len = que.length;
+    double marks = 0.0;
+
+    for(int i=0 ; i<len ; i++) {
+      marks = marks + que[i].evalQuestion();
+      print(' ${i+1}  ${marks}  ${que[i].evalQuestion()}');
+    }
+
+    return marks;
+  }
+
+  List<int> evalStats() {
+    List<int> ret = [0, 0, 0, 0];
+
+    for(int i=0 ; i<que.length ; i++) {
+      String status = que[i].returnStatus();
+      if(status == 'Correct') {
+        ret[0] = ret[0] + 1;
+      }
+      else if(status == 'Partial Correct') {
+        ret[1] = ret[1] + 1;
+      }
+      else if(status == 'Unattemted') {
+        ret[2] = ret[2] + 1;
+      }
+      else {
+        ret[3] = ret[3] + 1;
+      }
+    }
+
+    return ret;
+  }
+
 }
 
 
 class Result {
   String id;
-  int marks;
+  double marks;
   dynamic ans = [];
 
   Result({required this.id, required this.marks, required this.ans});
@@ -197,6 +295,9 @@ class Result {
 }
 
 Future<void> updateHomeInfo() async{
+  createdTests = [];
+  answeredTests = [];
+
   final prefs = await SharedPreferences.getInstance();
   var tmpUsername = prefs.getString('username');
   var tmpEmail = prefs.getString('email');
@@ -211,15 +312,6 @@ Future<void> updateHomeInfo() async{
     print(answeredTests);
   }
 
-  for(int i=0 ; i<createdTests.length ; i++) {
-    Map? tmp = await getDocField(createdTests[i]);
-    createdTestsObject.add(tmp);
-  }
-
-  for(int i=0 ; i<answeredTests.length ; i++) {
-    Map? tmp = await getDocField(answeredTests[i]);
-    answeredTestsObject.add(tmp);
-  }
 }
 
 Future<void> saveQuizToFirestore(Quiz quiz) async {
@@ -361,7 +453,7 @@ Future<void> getResultsInDescendingOrder(String quizId) async {
         .orderBy('marks', descending: true)  
         .get();
 
-    
+    resultList = [];
     for (var doc in querySnapshot.docs) {
       resultList.add(Result.fromFirestore(doc));
     }
@@ -394,11 +486,11 @@ Future<void> getResultsInDescendingOrder(String quizId) async {
 //   }
 // }
 
-Future<void> fetchUserAnswers() async {
+Future<void> fetchUserAnswers(String Username) async {
   try {
     final db = FirebaseFirestore.instance;
     DocumentReference docRef =
-        db.collection('tests').doc(curr_quiz.id).collection('results').doc(username);
+        db.collection('tests').doc(curr_quiz.id).collection('results').doc(Username);
     DocumentSnapshot docSnapshot = await docRef.get();
 
     List<dynamic> tmpUserAns = docSnapshot.get('ans');
@@ -415,3 +507,53 @@ Future<void> fetchUserAnswers() async {
     print('Error in results : $e');
   }
 }
+
+
+Future<bool> isUsernameAvailable(String username) async {
+  try {
+    // Get the Firestore instance
+    final db = FirebaseFirestore.instance;
+
+    // Reference to the document in 'users' collection with the given username
+    DocumentReference docRef = db.collection('users').doc(username);
+
+    // Fetch the document snapshot
+    DocumentSnapshot docSnapshot = await docRef.get();
+
+    // Check if the document exists
+    if (docSnapshot.exists) {
+      return false; // Username already exists
+    } else {
+      return true; // Username does not exist, user can create an account
+    }
+  } catch (e) {
+    print('Error checking username: $e');
+    return false; // In case of error, return false to be safe
+  }
+}
+
+Future<bool> addUserToFirestore() async{
+
+  CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
+
+  Map<String, dynamic> userMap = {
+    'username': username,
+    'password': password,
+    'email': email,
+    'name': name,
+    'phno': phno,
+    'institute': institute,
+    'createdTests': [],
+    'answeredTests': [],
+  };
+
+  try {
+    await usersCollection.doc(username).set(userMap);
+    print('User saved successfully!');
+    return true;
+  } catch (e) {
+    print('Failed to save user: $e');
+    return false;
+  }
+}
+

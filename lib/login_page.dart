@@ -3,6 +3,7 @@ import 'package:quiz_app/home_page.dart';
 import 'package:quiz_app/signup_page.dart'; // Import the sign-up page
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quiz_app/forgot_password.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -13,7 +14,7 @@ class _LoginPageState extends State<LoginPage> {
   String username = "";
   String password = "";
   bool changeButton = false;
-  bool login_true = false;
+  bool isLoggedIn = false;
 
   Future<bool> is_correct(String username, String password) async {
     try {
@@ -24,6 +25,10 @@ class _LoginPageState extends State<LoginPage> {
       if (userDoc.exists) {
         String storedPassword = userDoc['password'];
         if (storedPassword == password) {
+          email = userDoc['email'];
+          final prefs = await SharedPreferences.getInstance();
+          prefs.setString('username', username);
+          prefs.setString('email', email);
           return true;
         } else {
           return false;
@@ -38,26 +43,18 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   moveToHome(BuildContext context) async {
-    login_true = await is_correct(username, password);
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString('username', username);
-    if (login_true) {
-      setState(() {
-        changeButton = true;
-      });
-      await Future.delayed(const Duration(seconds: 1));
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-      );
+    isLoggedIn = await is_correct(username, password);
+
+    print(username);
+    if (isLoggedIn) {
+      await updateHomeInfo();
+      Navigator.pop(context);
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => HomePage()));
     } else {
-      setState(() {
-        changeButton = true;
-      });
-      await Future.delayed(const Duration(seconds: 1));
-      setState(() {
-        changeButton = false;
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Incorrect Username or Password')),
+      );
     }
   }
 
@@ -66,9 +63,9 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(
-          width: double.infinity, 
-          height: MediaQuery.of(context).size.height, 
-          color: const Color(0xFF00A1E4), 
+          width: double.infinity,
+          height: MediaQuery.of(context).size.height,
+          color: const Color(0xFF00A1E4),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -84,7 +81,6 @@ class _LoginPageState extends State<LoginPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 20),
-
                       const Text(
                         "Sign In",
                         style: TextStyle(
@@ -94,9 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         textAlign: TextAlign.left,
                       ),
-
                       const SizedBox(height: 8),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
@@ -107,7 +101,8 @@ class _LoginPageState extends State<LoginPage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => SignupPage(), // Navigate to SignUpPage
+                                  builder: (context) =>
+                                      SignupPage(), // Navigate to SignUpPage
                                 ),
                               );
                             },
@@ -121,9 +116,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 16),
-
                       TextFormField(
                         decoration: const InputDecoration(
                           hintText: "Enter username",
@@ -136,11 +129,10 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         onChanged: (value) {
                           // Handle changes
+                          username = value;
                         },
                       ),
-
                       const SizedBox(height: 16),
-
                       TextFormField(
                         obscureText: true,
                         decoration: const InputDecoration(
@@ -153,18 +145,16 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         onChanged: (value) {
-                          // Handle changes
+                          password = value;
                         },
                       ),
-
                       const SizedBox(height: 24),
-
                       Material(
                         color: Colors.green,
                         borderRadius: BorderRadius.circular(8),
                         child: InkWell(
                           onTap: () {
-                            // Handle sign in
+                            moveToHome(context);
                           },
                           child: const SizedBox(
                             height: 50,
@@ -182,12 +172,16 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 16),
-
                       GestureDetector(
                         onTap: () {
                           // Navigate to forgot password
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ForgotPasswordPage(),
+                            ),
+                          );
                         },
                         child: const Text(
                           "Forgot Password?",
@@ -199,7 +193,6 @@ class _LoginPageState extends State<LoginPage> {
                           textAlign: TextAlign.left,
                         ),
                       ),
-
                       const SizedBox(height: 20),
                     ],
                   ),

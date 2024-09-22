@@ -43,19 +43,10 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _navigateToTestDetail(String test) {
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TestDetailPage(test: test),
-      ),
-    );
-  }
+  void _navigateToCreatedTestDetail(Map<String, dynamic> test) async{
 
-  void _navigateToCreatedTestDetail(DocumentReference test) async{
-
-    curr_quiz = await fetchQuizFromFirestore(test.id) as Quiz;
+    curr_quiz = await fetchQuizFromFirestore(test['ref'].id) as Quiz;
 
     if(curr_quiz.isComplete == false) {
       Navigator.push(
@@ -71,22 +62,22 @@ class _HomePageState extends State<HomePage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => TestadminPage(testId: test.id.toString()),
+          builder: (context) => TestadminPage(testId: test['ref'].id.toString()),
         ),
       );
     }
   }
 
-  void _navigateToAnsweredTestDetail(DocumentReference test) async{
+  void _navigateToAnsweredTestDetail(Map<String, dynamic> test) async{
 
-    curr_quiz = await fetchQuizFromFirestore(test.id) as Quiz;
-    await fetchUserAnswers();
+    curr_quiz = await fetchQuizFromFirestore(test['ref'].id) as Quiz;
+    await fetchUserAnswers(username);
 
    
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ResultPage(),
+          builder: (context) => const ResultPage(),
         ),
       );
     
@@ -199,7 +190,7 @@ class _HomePageState extends State<HomePage> {
                                         child: const Icon(Icons.text_snippet_outlined, size: 100, color: Color.fromRGBO(128, 202, 255, 1),),
                                       ),
         
-                                      Text(answeredTestsObject[reverseIndex]['name'], style: const TextStyle(
+                                      Text(answeredTests[reverseIndex]['name'], style: const TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 14,
                                       ),),
@@ -222,7 +213,7 @@ class _HomePageState extends State<HomePage> {
                       child: Center(child: Text('No Tests Created')),      
                     )
                   : Container(
-                      margin: EdgeInsets.fromLTRB(0 , 5, 0, 0),
+                      margin: const EdgeInsets.fromLTRB(0 , 5, 0, 0),
                       height: 200,
                       child: ListView.builder(
                         
@@ -253,7 +244,7 @@ class _HomePageState extends State<HomePage> {
                                         child: const Icon(Icons.text_snippet_outlined, size: 100, color: Color.fromRGBO(128, 202, 255, 1),),
                                       ),
         
-                                      Text(createdTestsObject[reverseIndex]['name'], style: const TextStyle(
+                                      Text(createdTests[reverseIndex]['name'], style: const TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 14,
                                       ),),
@@ -320,20 +311,3 @@ class CreateOrAnswerTestPage extends StatelessWidget {
   }
 }
 
-class TestDetailPage extends StatelessWidget {
-  final String test;
-
-  TestDetailPage({required this.test});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Test Detail'),
-      ),
-      body: Center(
-        child: Text(test, style: const TextStyle(fontSize: 24)),
-      ),
-    );
-  }
-}
