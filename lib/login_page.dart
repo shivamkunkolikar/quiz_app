@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_app/func_utils.dart';
 import 'package:quiz_app/home_page.dart';
 import 'package:quiz_app/signup_page.dart'; // Import the sign-up page
 import 'package:cloud_firestore/cloud_firestore.dart';
