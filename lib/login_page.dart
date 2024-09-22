@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:quiz_app/forgot_password.dart';
 import 'package:quiz_app/home_page.dart';
 //import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -191,6 +192,7 @@ class _LoginPageState extends State<LoginPage> {
                       GestureDetector(
                         onTap: () {
                           // Navigate to forgot password
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => ForgotPasswordPage()));
                         },
                         child: const Text(
                           "Forgot Password?",

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/answertest_page.dart';
 import 'package:quiz_app/createtest_page.dart';
-import 'package:quiz_app/main.dart';
 import 'package:quiz_app/func_utils.dart';
 import 'package:quiz_app/login_page.dart';
 import 'package:quiz_app/result_page.dart';
@@ -263,7 +262,8 @@ class _HomePageState extends State<HomePage> {
 
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToCreateOrAnswerTest,
-        child: const Icon(Icons.add),
+        backgroundColor: const Color(0xFF0094FF),
+        child: const Icon(Icons.add, color: Colors.white,),
       ),
 
     );
@@ -283,31 +283,91 @@ class CreateOrAnswerTestPage extends StatelessWidget {
         title: const Text('Create or Answer Test'),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () async{
-                final db = FirebaseFirestore.instance;
-                curr_quiz = Quiz('', '', [], -1);
-                DocumentReference doc = await db.collection("tests").add(curr_quiz.toMap());
-                curr_quiz.id = doc.id;
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) => CreateTestPage(flag: false)));
-              },
-              child: const Text('Create Test'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                //onTestAnswered('Test ${DateTime.now()}');
-                Navigator.push(context, MaterialPageRoute(builder: (context) => AnswerTestPage()));
-              },
-              child: const Text('Answer Test'),
-            ),
-          ],
+        
+        child: Container(
+          margin: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      offset: Offset(2, 2),
+                      color: Colors.grey,
+                      blurRadius: 5.0,
+                    )
+                  ]
+                ),
+                child: Material(
+                  color: const Color(0xFF0094FF),
+                  borderRadius: BorderRadius.circular(8),
+                  child: InkWell(
+                    
+                    onTap: () async{
+                      final db = FirebaseFirestore.instance;
+                      curr_quiz = Quiz('', '', [], -1);
+                      DocumentReference doc = await db.collection("tests").add(curr_quiz.toMap());
+                      curr_quiz.id = doc.id;
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => CreateTestPage(flag: false)));
+                    },
+                    child: Container(
+                      height: 50,
+                      margin: const EdgeInsets.all(1),
+                      alignment: Alignment.center,
+                      child: const Text('Create Test', style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),)
+                    ),
+                  ),
+                ),
+              ),
+
+              Container(
+                decoration: const BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      offset: Offset(2, 2),
+                      color: Colors.grey,
+                      blurRadius: 5.0,
+                    )
+                  ]
+                ),
+                margin: const EdgeInsets.all(10),
+                child: Material(
+                  color: const Color(0xFF09E21F),
+                  borderRadius: BorderRadius.circular(8),
+                  child: InkWell(
+                    
+                    onTap: () async{
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => AnswerTestPage()));
+                    },
+                    child: Container(
+                      height: 50,
+                      margin: const EdgeInsets.all(1),
+                      alignment: Alignment.center,
+                      child: const Text('Answer Test', style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),)
+                    ),
+                  ),
+                ),
+              ),
+              
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
+
+// Navigator.push(context, MaterialPageRoute(builder: (context) => AnswerTestPage()));
 

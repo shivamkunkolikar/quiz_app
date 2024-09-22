@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/func_utils.dart';
-import 'package:quiz_app/home_page.dart';
 import 'package:quiz_app/login_page.dart';
 
 class SignupPage extends StatefulWidget {
@@ -52,7 +51,7 @@ class _SignupPageState extends State<SignupPage> {
       bool isSuccess = await addUserToFirestore();
       if(isSuccess) {
         // goto success page
-         Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+         Navigator.push(context, MaterialPageRoute(builder: (context) => SuccessSignupPage()));
       }
       else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -78,7 +77,7 @@ class _SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF00A1E4), // Light blue background color
+      backgroundColor: const Color(0xFF00A1E4),  // Light blue background color
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -319,3 +318,79 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 }
+
+
+
+class SuccessSignupPage extends StatefulWidget {
+  @override
+  State<SuccessSignupPage> createState() => _SuccessSignupPageState();
+}
+
+class _SuccessSignupPageState extends State<SuccessSignupPage> {
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF00A1E4), // Light blue background color
+      body: Center(
+        child: SingleChildScrollView(
+          child: Container(
+            width: double.infinity,
+            height: 420,
+            decoration: BoxDecoration(
+              color: const Color(0xFFB3E5FC),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            margin: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Account Created Succssfully', style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w600,
+                ),),
+                const CircleAvatar(
+                  radius: 36,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.done, color: Colors.green, size: 32,),
+                ),
+                Material(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(8),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+                          },
+                          child: const SizedBox(
+                            height: 50,
+                            width: double.infinity,
+                            child: Center(
+                              child: Text(
+                                "Done",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                ),
+                  
+            
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+
+

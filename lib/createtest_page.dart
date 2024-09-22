@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:quiz_app/func_utils.dart';
 import 'package:quiz_app/home_page.dart';
 import 'package:flutter/foundation.dart';
@@ -493,9 +494,30 @@ class _CreateTestPageState extends State<CreateTestPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Test Code : ${curr_quiz.id}', // Placeholder for test code
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Test Code : ${curr_quiz.id}', // Placeholder for test code
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Material(
+                  color: Colors.transparent,
+                  
+                  borderRadius: BorderRadius.circular(8),
+                  child: InkWell(
+                    onTap: () async{
+                      await Clipboard.setData(ClipboardData(text: curr_quiz.id));
+                    },
+                    child: const SizedBox(
+                      child: Center(
+                        child: Icon(Icons.copy)
+                      ),
+                    ),
+                  ),
+                ),
+                      
+              ],
             ),
             const SizedBox(height: 16.0),
             TextFormField(
