@@ -272,6 +272,17 @@ class _SignupPageState extends State<SignupPage> {
                         onChanged: (value) {
                           email = value;
                         },
+                        validator: (value) {
+                          
+                          if (value!.isEmpty) {
+                            return "Username cannot be empty";
+                          }
+                          if(!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)){
+                            return "Email Invalid";
+                          }
+                          
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 16),
                       TextFormField(

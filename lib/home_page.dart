@@ -307,7 +307,7 @@ class CreateOrAnswerTestPage extends StatelessWidget {
                     
                     onTap: () async{
                       final db = FirebaseFirestore.instance;
-                      curr_quiz = Quiz('', '', [], -1);
+                      curr_quiz = Quiz('', '', [], -1, username);
                       DocumentReference doc = await db.collection("tests").add(curr_quiz.toMap());
                       curr_quiz.id = doc.id;
                       Navigator.pop(context);

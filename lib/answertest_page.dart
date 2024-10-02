@@ -550,7 +550,7 @@ class _QuizPageState extends State<QuizPage> {
                                     ),
                                   ),
                                 ),
-                                Text(_newQuestion.opt[index]),
+                                Flexible(child: Text(_newQuestion.opt[index])),
                               ],
                             ),
                           ),
@@ -721,20 +721,27 @@ class _TestHeadingPageState extends State<TestHeadingPage> {
                   color: const Color.fromRGBO(255, 255, 255, 0.6),
                 ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Hello World'),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const QuizPage()));
-
-                      },
-                      
-                      child: const Text('Start Test'), 
+                    const TestDiscription(),
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.fromLTRB(0, 0, 0, 30),
+                      child: Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const QuizPage()));
+                        
+                          },
+                          
+                          child: const Text('Start Test'), 
+                        ),
+                      ),
                     ),
 
                   ],
@@ -760,16 +767,61 @@ class _TestHeadingPageState extends State<TestHeadingPage> {
 }
 
 class TestDiscription extends StatelessWidget {
-  const TestDiscription({super.key, required String this.test_info});
-  final String test_info;
+  const TestDiscription({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      // decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+      margin: const EdgeInsets.fromLTRB(22, 30, 10, 10),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(curr_quiz.name),
-          Text('$test_info'),
+          Text(curr_quiz.name, style: const TextStyle(
+            fontSize: 24,
+            color: Color(0xFF00599A),
+            fontWeight: FontWeight.w600,
+          ),),
+          Text('Test Duration : ${curr_quiz.time} minutes'),
+          Text('Test Creator  : ${curr_quiz.userName}'),
+          Row(
+            children: [
+              const Text('Press '),
+              ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromRGBO(6, 189, 0, 1),
+                    ),
+                    child: const Text('Next'),
+              ),
+              const Text(' To go to next Question')
+            ],
+          ),
+          Row(
+            children: [
+              const Text('Press '),
+              ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromRGBO(255, 145, 0, 1),
+                    ),
+                    child: const Text('Prev'),
+              ),
+              const Text(' To go to previous Question'),
+            ],
+          ),
+          Row(
+            children: [
+              ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromRGBO(255, 145, 0, 1),
+                    ),
+                    child: const Text('Prev'),
+              ),
+              const Text(' To go to previous Question'),
+            ],
+          ),
         ],
       ),
     );

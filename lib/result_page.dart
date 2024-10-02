@@ -1,4 +1,7 @@
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:quiz_app/createtest_page.dart';
 import 'package:quiz_app/func_utils.dart';
 
@@ -12,10 +15,315 @@ class ResultPage extends StatefulWidget {
 class _ResultPageState extends State<ResultPage> {
   @override
   Widget build(BuildContext context) {
+    double score = curr_quiz.evaluateTest();
+    double accur = curr_quiz.evaluteAccuracy();
+    List<int> stats = curr_quiz.evalStats();
+    
+
     return Scaffold(
-      body: Container(
-        child: Text('marks = ${curr_quiz.evaluateTest()}'),
+
+      backgroundColor: const Color(0xFF0094FF),
+
+      appBar: AppBar(
+        leading: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: const Icon(Icons.arrow_back)),
+        title: const Text('Result Page'),
       ),
+
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(10, 30, 10, 10),
+              padding: const EdgeInsets.fromLTRB(20, 15, 10, 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: const Color.fromRGBO(255, 255, 255, 0.6),
+              ),
+              child: Column(
+                
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                    const Text('Your Score', style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF4E4E4E)
+                    ),),
+
+                  
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.fromLTRB(0, 15, 15, 0),
+                          // color: Colors.amber,
+                          width: 80,
+                          height: 80,
+                          child: PieChart(
+                            PieChartData(
+                              sections: [
+                                PieChartSectionData(
+                                  color: Colors.green,
+                                  value: score,
+                                  showTitle: false,
+                                  radius: 8
+                                ),
+                                PieChartSectionData(
+                                  color: Colors.grey,
+                                  value: curr_quiz.calcTotal() - score,
+                                  showTitle: false,
+                                  radius: 8,
+                                ),
+                              ],
+                              centerSpaceRadius: 24, // Space in the center
+                              sectionsSpace: 2, 
+                              startDegreeOffset: 270,
+                            ),
+                          ),
+                        ),
+
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(' ${score.toStringAsFixed(2)}', style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF4E4E4E)
+                            ),),
+                            Text('/${curr_quiz.calcTotal()}', style: const TextStyle(
+                              color: Color(0xFF4E4E4E),
+                              fontWeight: FontWeight.w500,
+                            ),)
+                          ],
+                        )
+                      ],
+
+                      
+                    ),
+                  
+                  
+                ],
+              ),
+        
+            ),
+
+
+
+
+
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+              padding: const EdgeInsets.fromLTRB(20, 15, 10, 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: const Color.fromRGBO(255, 255, 255, 0.6),
+              ),
+              child: Column(
+                
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                    const Text('Details', style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF4E4E4E)
+                    ),),
+
+                    Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+
+                          Text('Total Questions      : ${curr_quiz.que.length}', style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),),
+
+                          Text('Attemted Questions   : ${curr_quiz.que.length - stats[2]}', style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),),
+
+                          Text('Unattemted Questions : ${stats[2]}', style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),),
+
+                          Text('Correct  Questions   : ${stats[0]}', style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),),
+
+                          Text('Partially Correct    : ${stats[1]}', style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),),
+
+                          Text('Incorrect Questions  : ${stats[3]}', style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),),
+
+                          Center(
+                            child: Container(
+                              margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                              // color: Colors.amber,
+                              width: 300,
+                              height: 300,
+                              child: PieChart(
+                                PieChartData(
+                                  sections: [
+                                    PieChartSectionData(
+                                      color: Colors.green,
+                                      value: stats[0] as double,
+                                      radius: 100,
+                                      showTitle: false,
+                                    ),
+                                    PieChartSectionData(
+                                      color: Colors.amber[200],
+                                      value: stats[1] as double,
+                                      radius: 100,
+                                      showTitle: false,
+                                    ),
+                                    PieChartSectionData(
+                                      color: Colors.red,
+                                      value: stats[3] as double,
+                                      radius: 100,
+                                      showTitle: false,
+                                    ),
+                                    PieChartSectionData(
+                                      color: Colors.grey,
+                                      value: stats[2] as double,
+                                      radius: 100,
+                                      showTitle: false,
+                                    ),
+                                  ],
+                                  centerSpaceRadius: 0, // Space in the center
+                                sectionsSpace: 0, 
+                                startDegreeOffset: 270,
+                                )
+                              ),
+                            ),
+                          )
+
+                        ],
+                      ),
+                    )
+                ],
+              ),
+        
+            ),
+
+
+
+
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+              padding: const EdgeInsets.fromLTRB(20, 15, 10, 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: const Color.fromRGBO(255, 255, 255, 0.6),
+              ),
+              child: Column(
+                
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                    const Text('Accuracy', style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF4E4E4E)
+                    ),),
+
+                    Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+
+                          Text('Your Accuracy is ${accur.toStringAsFixed(2)}%', style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),),
+
+                          Center(
+                            child: Container(
+                              margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                              // color: Colors.amber,
+                              width: 300,
+                              height: 300,
+                              child: PieChart(
+                                PieChartData(
+                                  sections: [
+                                    PieChartSectionData(
+                                      color: Colors.green,
+                                      value: accur,
+                                      radius: 100,
+                                      showTitle: false,
+                                    ),
+                                    PieChartSectionData(
+                                      color: Colors.red,
+                                      value: 100 - accur,
+                                      radius: 100,
+                                      showTitle: false,
+                                    ),
+                                  ],
+                                  centerSpaceRadius: 0, // Space in the center
+                                sectionsSpace: 0, 
+                                startDegreeOffset: 270,
+                                )
+                              ),
+                            ),
+                          )
+
+                        ],
+                      ),
+                    ),
+
+
+                ],
+              ),
+        
+            ),
+
+
+            Container(
+              margin: const EdgeInsets.all(10),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: const Color.fromRGBO(255, 255, 255, 0.6)
+              ),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                      MaterialPageRoute(
+                        builder: (context) => const StatusPage(),
+                    ),
+                  );
+                },
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Check All Answers', style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF4E4E4E),
+                    ),),
+                    Icon(Icons.arrow_forward, color: Color(0xFF4E4E4E),)
+                  ],
+                  ),
+              ),
+            )
+          ],
+        ),
+      )
     );
   }
 }
@@ -105,13 +413,22 @@ class _StatusPageState extends State<StatusPage> {
 
   dynamic retBgCol(int curr, int index) {
     if (curr_quiz.que[curr-1].isCorrect[index] == true) {
-      return Color.fromARGB(108, 76, 175, 79);
+      return const Color.fromARGB(108, 76, 175, 79);
     }
     else if(curr_quiz.que[curr-1].userAns[index] == true) {
       return const Color.fromARGB(113, 244, 67, 54);
     }
     else {
       return Colors.transparent;
+    }
+  }
+
+  dynamic retCircleCol(int curr, int index) {
+    if(curr_quiz.que[curr-1].userAns[index] == true) {
+      return const Color.fromARGB(99, 47, 255, 64);
+    }
+    else {
+      return Colors.white;
     }
   }
 
@@ -253,7 +570,7 @@ class _StatusPageState extends State<StatusPage> {
                                 Container(
                                   margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
                                   child: CircleAvatar(
-                                    backgroundColor: Colors.white,
+                                    backgroundColor: retCircleCol(curr_q, index),
                                     radius: 10,
                                     child: Text(
                                       '${index + 1}',
@@ -278,25 +595,45 @@ class _StatusPageState extends State<StatusPage> {
 
               Container(
                 width: double.infinity,
-                height: 50,
+                // height: 50,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   color: const Color.fromRGBO(255, 255, 255, 0.6),
                 ),
                 margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                padding: const EdgeInsets.fromLTRB(20, 10, 10, 10),
                 child: Column(
                   children: [
                     Row(
                       children: [
-                        const Text('Status: '),
-                        Text(_newQuestion.returnStatus()),
+                        const Text('Status: ', style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF4E4E4E),
+                        ),),
+                        Text(_newQuestion.returnStatus(), style: TextStyle(
+                          color: _newQuestion.returnStatus() == 'Correct' ? const Color(0xFF04CC00)
+                          : _newQuestion.returnStatus() == 'Incorrect' ? Colors.red 
+                          : _newQuestion.returnStatus() == 'Partial Correct' ? const Color(0xFFFFC700)
+                          : const Color(0xFF4E4E4E),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),),
                       ],
                     ),
 
                     Row(
                       children: [
-                        const Text('Marks Awarded: '),
-                        Text(_newQuestion.evalQuestion().toString()),
+                        const Text('Marks Awarded: ', style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF4E4E4E),
+                        ),),
+                        Text(_newQuestion.evalQuestion().toStringAsFixed(2), style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF4E4E4E),
+                        ),),
                       ],
                     )
                   ],

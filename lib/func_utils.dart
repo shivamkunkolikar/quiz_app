@@ -21,7 +21,7 @@ List<dynamic> resultList = [];
 //   Result(id: 'User 4', marks: 58, ans:[]),
 // ];
 
-Quiz curr_quiz = Quiz('', '', [], -1);
+Quiz curr_quiz = Quiz('', '', [], -1, '');
 
 class Question {
   Question(this.text, this.opt, this.mks, this.isCorrect, this.isMultipleCorrect);
@@ -118,7 +118,7 @@ class Question {
         return 'Unattemted';
       }
       else {
-        return 'Wrong';
+        return 'Incorrect';
       }
     }
     else {
@@ -140,7 +140,7 @@ class Question {
         double tot_marks = 0.0; 
         for(int i=0 ; i<4  ; i++) {
           if(isCorrect[i] == false && userAns[i] == true) {
-            return 'Wrong';
+            return 'Incorrect';
           }
           else if(isCorrect[i] == true && userAns[i] == true) {
             tot_marks = tot_marks + atomMarks;
@@ -154,10 +154,11 @@ class Question {
 }
 
 class Quiz {
-  Quiz(this.id, this.name, this.que, this.time, {this.isActive = false, this.isComplete = false});
+  Quiz(this.id, this.name, this.que, this.time, this.userName, {this.isActive = false, this.isComplete = false});
 
   String id;
   String name;
+  String userName;
   List<Question> que;
   int time;
   bool isActive = false;
@@ -175,7 +176,8 @@ class Quiz {
       'que': que.map((q) => q.toMap()).toList(),
       'time': time,
       'isActive': isActive,
-      'isComplete': isComplete
+      'isComplete': isComplete,
+      'userName': userName,
     };
   }
 
@@ -193,8 +195,10 @@ class Quiz {
       map['name'] as String,
       (map['que'] as List<dynamic>).map((q) => Question.fromMap(q as Map<String, dynamic>)).toList(),
       map['time'] as int,
+      map['userName'] as String,
       isActive: map['isActive'],
       isComplete: map['isComplete']
+      
     );
   }
 
@@ -226,6 +230,8 @@ class Quiz {
     return cnt;
   }
 
+
+
   double evaluateTest() {
     int len = que.length;
     double marks = 0.0;
@@ -240,15 +246,19 @@ class Quiz {
   }
 
   double evaluteAccuracy() {
-    int len = que.length;
-    double marks = 0.0;
+    int len = que.length; 
+    double cnt = 0.0, corr = 0.0;
 
     for(int i=0 ; i<len ; i++) {
-      marks = marks + que[i].evalQuestion();
-      print(' ${i+1}  ${marks}  ${que[i].evalQuestion()}');
+      if(!que[i].checkifUnattemted()) {
+        cnt = cnt + 1;
+        if(que[i].returnStatus() == 'Correct') {
+          corr = corr + 1;
+        }
+      }
     }
 
-    return marks;
+    return (corr / cnt) * 100.0;
   }
 
   List<int> evalStats() {

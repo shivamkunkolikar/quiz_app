@@ -383,7 +383,7 @@ class _QuizInputPageState extends State<QuizInputPage> {
 
 void setNewQuiz() async{
     final db = FirebaseFirestore.instance;
-    curr_quiz = Quiz('', '', [], -1);
+    curr_quiz = Quiz('', '', [], -1, username);
     DocumentReference doc = await db.collection("tests").add(curr_quiz.toMap());
     curr_quiz.id = doc.id;
     print(curr_quiz.id);
@@ -417,6 +417,10 @@ class _CreateTestPageState extends State<CreateTestPage> {
   bool mapExistsInList(Map<String, dynamic> map, List<dynamic> mapList) {
     for (var element in mapList) {
       if (mapEquals(element, map)) {
+        return true;
+      }
+      else if(element['ref'] == map['ref']) {
+        element['name'] = map['name'];
         return true;
       }
     }
