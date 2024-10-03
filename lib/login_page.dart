@@ -21,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   String password = "";
   bool changeButton = false;
   bool isLoggedIn = false;
+  bool isLoading = false;
 
   Future<bool> is_correct(String username, String password) async {
     try {
@@ -49,6 +50,7 @@ class _LoginPageState extends State<LoginPage> {
 
 
   moveToHome(BuildContext context) async {
+    
     isLoggedIn = await is_correct(username, password);
     
     print(username);
@@ -167,10 +169,27 @@ class _LoginPageState extends State<LoginPage> {
                         color: Colors.green,
                         borderRadius: BorderRadius.circular(8),
                         child: InkWell(
-                          onTap: () {
-                            moveToHome(context);
+                          onTap: () async{
+                            setState(() {
+                              isLoading = true;
+                            });
+                            await moveToHome(context);
+                            setState(() {
+                              isLoading = false;
+                            });
+                            print('h');
                           },
-                          child: const SizedBox(
+                          child: isLoading == true ? const SizedBox(
+                            height: 50,
+                            width: double.infinity,
+                            child: Center(
+                              child: const CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 4,
+                              )
+                            ),
+                          )
+                          : const SizedBox(
                             height: 50,
                             width: double.infinity,
                             child: Center(

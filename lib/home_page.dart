@@ -68,9 +68,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _navigateToAnsweredTestDetail(Map<String, dynamic> test) async{
-
+    print('test 1 passed');
     curr_quiz = await fetchQuizFromFirestore(test['ref'].id) as Quiz;
+    print('test 2 passed');
     await fetchUserAnswers(username);
+    print('test 3 passed');
 
    
       Navigator.push(
@@ -240,7 +242,7 @@ class _HomePageState extends State<HomePage> {
                                           borderRadius: BorderRadius.circular(10),
                                           color: Colors.white
                                         ),
-                                        child: const Icon(Icons.text_snippet_outlined, size: 100, color: Color.fromRGBO(128, 202, 255, 1),),
+                                        child: const Icon(Icons.text_snippet, size: 100, color: Color.fromRGBO(128, 202, 255, 1),),
                                       ),
         
                                       Text(createdTests[reverseIndex]['name'], style: const TextStyle(

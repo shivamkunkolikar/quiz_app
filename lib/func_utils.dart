@@ -298,7 +298,7 @@ class Result {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Result(
       id: doc.id,
-      marks: data['marks'],
+      marks: data['marks'].toDouble(),
       ans: data['ans']
     );
   }

@@ -68,13 +68,13 @@ class _ResultPageState extends State<ResultPage> {
                               sections: [
                                 PieChartSectionData(
                                   color: Colors.green,
-                                  value: score,
+                                  value: score.toDouble(),
                                   showTitle: false,
                                   radius: 8
                                 ),
                                 PieChartSectionData(
                                   color: Colors.grey,
-                                  value: curr_quiz.calcTotal() - score,
+                                  value: (curr_quiz.calcTotal().toDouble() - score.toDouble()).toDouble(),
                                   showTitle: false,
                                   radius: 8,
                                 ),
@@ -110,7 +110,6 @@ class _ResultPageState extends State<ResultPage> {
               ),
         
             ),
-
 
 
 
@@ -180,25 +179,25 @@ class _ResultPageState extends State<ResultPage> {
                                   sections: [
                                     PieChartSectionData(
                                       color: Colors.green,
-                                      value: stats[0] as double,
+                                      value: stats[0].toDouble(),
                                       radius: 100,
                                       showTitle: false,
                                     ),
                                     PieChartSectionData(
                                       color: Colors.amber[200],
-                                      value: stats[1] as double,
+                                      value: stats[1].toDouble(),
                                       radius: 100,
                                       showTitle: false,
                                     ),
                                     PieChartSectionData(
                                       color: Colors.red,
-                                      value: stats[3] as double,
+                                      value: stats[3].toDouble(),
                                       radius: 100,
                                       showTitle: false,
                                     ),
                                     PieChartSectionData(
                                       color: Colors.grey,
-                                      value: stats[2] as double,
+                                      value: stats[2].toDouble(),
                                       radius: 100,
                                       showTitle: false,
                                     ),
@@ -262,13 +261,13 @@ class _ResultPageState extends State<ResultPage> {
                                   sections: [
                                     PieChartSectionData(
                                       color: Colors.green,
-                                      value: accur,
+                                      value: accur.toDouble(),
                                       radius: 100,
                                       showTitle: false,
                                     ),
                                     PieChartSectionData(
                                       color: Colors.red,
-                                      value: 100 - accur,
+                                      value: (100.toDouble() - accur.toDouble()).toDouble(),
                                       radius: 100,
                                       showTitle: false,
                                     ),
