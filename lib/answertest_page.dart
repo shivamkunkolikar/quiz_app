@@ -215,6 +215,17 @@ class FullScreenDrawer extends StatelessWidget {
 }
 
 
+Future<void> submitTestFunction() async{ 
+  final db = FirebaseFirestore.instance;
+  await saveResultToFirestore(curr_quiz);
+  DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
+  answeredTests.add({'ref': docRef, 'name': curr_quiz.name});
+  await updateAnsweredTestList(answeredTests);
+  await updateHomeInfo();
+                      
+}
+
+
 class QuizPage extends StatefulWidget {
   const QuizPage({super.key});
 
@@ -239,9 +250,14 @@ class _QuizPageState extends State<QuizPage> {
     if (_timer != null) {
       _timer!.cancel();
     }
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async{
       if (time_left == 0 && time_left_sec == 0) {
         _timer!.cancel();
+
+        await submitTestFunction();
+        Navigator.pop(context);
+        Navigator.push(context, MaterialPageRoute(builder: (context) =>  SuccessSubmitPage()));
+
         // Time is up, handle the end of the quiz
       } else {
         setState(() {
@@ -550,7 +566,7 @@ class _QuizPageState extends State<QuizPage> {
                                     ),
                                   ),
                                 ),
-                                Text(_newQuestion.opt[index]),
+                                Flexible(child: Text(_newQuestion.opt[index])),
                               ],
                             ),
                           ),
@@ -721,20 +737,27 @@ class _TestHeadingPageState extends State<TestHeadingPage> {
                   color: const Color.fromRGBO(255, 255, 255, 0.6),
                 ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Hello World'),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const QuizPage()));
-
-                      },
-                      
-                      child: const Text('Start Test'), 
+                    const TestDiscription(),
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.fromLTRB(0, 0, 0, 30),
+                      child: Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const QuizPage()));
+                        
+                          },
+                          
+                          child: const Text('Start Test'), 
+                        ),
+                      ),
                     ),
 
                   ],
@@ -760,16 +783,61 @@ class _TestHeadingPageState extends State<TestHeadingPage> {
 }
 
 class TestDiscription extends StatelessWidget {
-  const TestDiscription({super.key, required String this.test_info});
-  final String test_info;
+  const TestDiscription({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      // decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+      margin: const EdgeInsets.fromLTRB(22, 30, 10, 10),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(curr_quiz.name),
-          Text('$test_info'),
+          Text(curr_quiz.name, style: const TextStyle(
+            fontSize: 24,
+            color: Color(0xFF00599A),
+            fontWeight: FontWeight.w600,
+          ),),
+          Text('Test Duration : ${curr_quiz.time} minutes'),
+          Text('Test Creator  : ${curr_quiz.userName}'),
+          Row(
+            children: [
+              const Text('Press '),
+              ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromRGBO(6, 189, 0, 1),
+                    ),
+                    child: const Text('Next'),
+              ),
+              const Text(' To go to next Question')
+            ],
+          ),
+          Row(
+            children: [
+              const Text('Press '),
+              ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromRGBO(255, 145, 0, 1),
+                    ),
+                    child: const Text('Prev'),
+              ),
+              const Text(' To go to previous Question'),
+            ],
+          ),
+          Row(
+            children: [
+              ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromRGBO(255, 145, 0, 1),
+                    ),
+                    child: const Text('Prev'),
+              ),
+              const Text(' To go to previous Question'),
+            ],
+          ),
         ],
       ),
     );
@@ -826,15 +894,25 @@ class TestStartInterface extends StatelessWidget {
 
 
 
+class SubmitTestPage extends StatefulWidget {
+  const SubmitTestPage({super.key});
+
+  @override
+  State<SubmitTestPage> createState() => _SubmitTestPageState();
+}
 
 
-class SubmitTestPage extends StatelessWidget {
+
+class _SubmitTestPageState extends State<SubmitTestPage> {
+  bool isLoading = false;
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.blue, 
       body: Center(
         child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
           width: double.infinity, 
           margin: const EdgeInsets.all(10.0),
           decoration: BoxDecoration(
@@ -850,7 +928,7 @@ class SubmitTestPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Color(0xFF4E4E4E),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -862,7 +940,7 @@ class SubmitTestPage extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 18.0,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Color(0xFF4E4E4E),
                 ),
                 textAlign: TextAlign.left,
               ),
@@ -875,16 +953,22 @@ class SubmitTestPage extends StatelessWidget {
                       Navigator.pop(context); 
                     },
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.grey[300], 
-                      foregroundColor: Colors.black, 
-                      padding: const EdgeInsets.symmetric( horizontal: 15.0, vertical: 15.0),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      backgroundColor: Colors.transparent, 
+                      foregroundColor: const Color(0xFF4E4E4E), 
+                      padding: const EdgeInsets.symmetric( horizontal: 30.0, vertical: 15.0),
+                      
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8),),
                     ),
-                    child: const Text('Go Back'),
+                    child: const Text('Go Back', style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),),
                   ),
+                  const SizedBox(height: 20,),
                   ElevatedButton(
                     onPressed: () async{
-                      
+                      setState(() {
+                        isLoading = true;
+                      });
                       final db = FirebaseFirestore.instance;
                       await saveResultToFirestore(curr_quiz);
                       DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
@@ -893,18 +977,23 @@ class SubmitTestPage extends StatelessWidget {
                       await updateHomeInfo();
                       Navigator.pop(context);
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (context) =>  HomePage()));
-
+                      Navigator.push(context, MaterialPageRoute(builder: (context) =>  SuccessSubmitPage()));
+                      setState(() {
+                        isLoading = false;
+                      });
                       print("Test Submitted");
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green, 
                       foregroundColor: Colors.white, 
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30.0, vertical: 15.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+                      shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    child: const Text('Submit Test'),
+                    child: isLoading == true ? const CircularProgressIndicator(color: Colors.white,) : const Text('Submit Test'),
                   ),
+                  const SizedBox(height: 20,)
                 ],
               ),
             ],
@@ -914,6 +1003,83 @@ class SubmitTestPage extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
+
+class SuccessSubmitPage extends StatefulWidget {
+  @override
+  State<SuccessSubmitPage> createState() => _SuccessSubmitPageState();
+}
+
+class _SuccessSubmitPageState extends State<SuccessSubmitPage> {
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF00A1E4), // Light blue background color
+      body: Center(
+        child: SingleChildScrollView(
+          child: Container(
+            width: double.infinity,
+            height: 420,
+            decoration: BoxDecoration(
+              color: const Color(0xFFB3E5FC),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            margin: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Test Submitted Successfully', style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF4E4E4E),
+                ),),
+                const CircleAvatar(
+                  radius: 36,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.done, color: Colors.green, size: 32,),
+                ),
+                Material(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(8),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                          },
+                          child: const SizedBox(
+                            height: 50,
+                            width: double.infinity,
+                            child: Center(
+                              child: Text(
+                                "Done",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                ),
+                  
+            
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 
 

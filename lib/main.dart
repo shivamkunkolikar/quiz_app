@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:quiz_app/home_page.dart';
+import 'package:quiz_app/result_page.dart';
+import 'package:quiz_app/signup_page.dart';
 import 'package:quiz_app/testadmin_page.dart';
 import 'firebase_options.dart';
 //import 'package:cloud_firestore/cloud_firestore.dart';
@@ -41,7 +43,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       // home: const MyHomePage(title: 'Flutter Demo Home Page')
       home: username == '' ? LoginPage() : HomePage(),
-      // home: ResultListPage(),
+      // home: const ResultPage()
+      // home: SuccessSignupPage(),
       // home: TestadminPage(testId: 'XHQih2i0lZ6LsdePiKtx'),
       // home: HomePage(),
 
