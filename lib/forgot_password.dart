@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-import 'package:firebase_auth/firebase_auth.dart';
-=======
 // import 'package:firebase_auth/firebase_auth.dart';
->>>>>>> origin/main
 
 class ForgotPasswordPage extends StatefulWidget {
   @override
@@ -16,16 +12,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-<<<<<<< HEAD
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  void resetPassword() async {
-    String email = _emailPhoneController.text.trim();
-
-    if (_newPasswordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Passwords do not match')),
-=======
   // final FirebaseAuth _auth = FirebaseAuth.instance;
 
   void resetPassword() async {
@@ -34,21 +20,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     if (_newPasswordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Passwords do not match')),
->>>>>>> origin/main
       );
       return;
     }
 
     try {
-<<<<<<< HEAD
-      await _auth.sendPasswordResetEmail(email: email);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password reset email sent')),
-=======
       // await _auth.sendPasswordResetEmail(email: email);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Password reset email sent')),
->>>>>>> origin/main
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -171,8 +150,4 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       ),
     );
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/main
