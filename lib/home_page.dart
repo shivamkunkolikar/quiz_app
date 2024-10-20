@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/answertest_page.dart';
 import 'package:quiz_app/createtest_page.dart';
+import 'package:quiz_app/dashboard_page.dart';
 import 'package:quiz_app/func_utils.dart';
 import 'package:quiz_app/login_page.dart';
 import 'package:quiz_app/result_page.dart';
@@ -119,13 +120,8 @@ class _HomePageState extends State<HomePage> {
               title: const Text('Dashboard'),
               onTap: () {
                 Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
                 Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) =>  const DashboardPage()));
               },
             ),
             const Spacer(),

@@ -472,6 +472,8 @@ class _CreateTestPageState extends State<CreateTestPage> {
       createdTests.add({'ref': docRef, 'name': curr_quiz.name});
     }
     await updateCreatedTestList(createdTests);
+    user_dash.noCreatedtests = user_dash.noCreatedtests + 1;
+    await storeDashboardData(user_dash);
     print("Create Test button pressed");
     Navigator.pop(context);
     Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
@@ -499,111 +501,113 @@ class _CreateTestPageState extends State<CreateTestPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Test Code : ${curr_quiz.id}', // Placeholder for test code
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-                Material(
-                  color: Colors.transparent,
-                  
-                  borderRadius: BorderRadius.circular(8),
-                  child: InkWell(
-                    onTap: () async{
-                      await Clipboard.setData(ClipboardData(text: curr_quiz.id));
-                    },
-                    child: const SizedBox(
-                      child: Center(
-                        child: Icon(Icons.copy)
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Test Code : ${curr_quiz.id}', // Placeholder for test code
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  Material(
+                    color: Colors.transparent,
+                    
+                    borderRadius: BorderRadius.circular(8),
+                    child: InkWell(
+                      onTap: () async{
+                        await Clipboard.setData(ClipboardData(text: curr_quiz.id));
+                      },
+                      child: const SizedBox(
+                        child: Center(
+                          child: Icon(Icons.copy)
+                        ),
                       ),
                     ),
                   ),
+                        
+                ],
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: _testNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Enter Test Name',
+                  border: OutlineInputBorder(),
                 ),
-                      
-              ],
-            ),
-            const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _testNameController,
-              decoration: const InputDecoration(
-                labelText: 'Enter Test Name',
-                border: OutlineInputBorder(),
+                onChanged: (value) {
+                  curr_quiz.name = value;
+                },
               ),
-              onChanged: (value) {
-                curr_quiz.name = value;
-              },
-            ),
-            const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _testDurationController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Enter Test Duration',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                curr_quiz.time = int.parse(value);
-              },
-            ),
-            const SizedBox(height: 8.0),
-            const Text(
-              'Test duration should be in minutes',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            const SizedBox(height: 16.0),
-            ElevatedButton.icon(
-              onPressed: _addQuestions,
-              icon: const Icon(Icons.add),
-              label: const Text('Add Questions'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue, 
-                foregroundColor: Colors.white, 
-                minimumSize: const Size(double.infinity, 50), 
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), 
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: _testDurationController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Enter Test Duration',
+                  border: OutlineInputBorder(),
                 ),
+                onChanged: (value) {
+                  curr_quiz.time = int.parse(value);
+                },
               ),
-            ),
-            const SizedBox(height: 16.0),
-            ElevatedButton.icon(
-              onPressed: _saveQuiz,
-              icon: const Icon(Icons.save_outlined),
-              label: const Text('Save Quiz'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue, 
-                foregroundColor: Colors.white, 
-                minimumSize: const Size(double.infinity, 50), 
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), 
+              const SizedBox(height: 8.0),
+              const Text(
+                'Test duration should be in minutes',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 16.0),
+              ElevatedButton.icon(
+                onPressed: _addQuestions,
+                icon: const Icon(Icons.add),
+                label: const Text('Add Questions'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue, 
+                  foregroundColor: Colors.white, 
+                  minimumSize: const Size(double.infinity, 50), 
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8), 
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 32.0),
-            ElevatedButton(
-              onPressed: _createTest,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0DDC30), 
-                foregroundColor: Colors.white, 
-                minimumSize: const Size(double.infinity, 50), 
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), 
+              const SizedBox(height: 16.0),
+              ElevatedButton.icon(
+                onPressed: _saveQuiz,
+                icon: const Icon(Icons.save_outlined),
+                label: const Text('Save Quiz'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue, 
+                  foregroundColor: Colors.white, 
+                  minimumSize: const Size(double.infinity, 50), 
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8), 
+                  ),
                 ),
               ),
-              child: const Text('Create Test', style: TextStyle(
-                fontWeight: FontWeight.w600,
-              )),
-            ),
-            const SizedBox(height: 8.0),
-            const Text(
-              'Once test is created questions cannot be edited',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-          ],
+              const SizedBox(height: 32.0),
+              ElevatedButton(
+                onPressed: _createTest,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0DDC30), 
+                  foregroundColor: Colors.white, 
+                  minimumSize: const Size(double.infinity, 50), 
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8), 
+                  ),
+                ),
+                child: const Text('Create Test', style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                )),
+              ),
+              const SizedBox(height: 8.0),
+              const Text(
+                'Once test is created questions cannot be edited',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+            ],
+          ),
         ),
       ),
     );

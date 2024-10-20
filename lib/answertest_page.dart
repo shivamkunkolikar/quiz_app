@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/widgets.dart';
 import 'package:quiz_app/createtest_page.dart';
 import 'package:quiz_app/func_utils.dart';
 import 'package:quiz_app/home_page.dart';
@@ -227,7 +228,10 @@ Future<void> submitTestFunction() async{
   await saveResultToFirestore(curr_quiz);
   DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
   answeredTests.add({'ref': docRef, 'name': curr_quiz.name});
+  user_dash.addToStats(curr_quiz.evalStats());
+  user_dash.noAnsweredtests = answeredTests.length;
   await updateAnsweredTestList(answeredTests);
+  await storeDashboardData(user_dash);
   await updateHomeInfo();
                       
 }
@@ -381,6 +385,7 @@ class _QuizPageState extends State<QuizPage> {
       child: Drawer(
         child: Column(
           children: [
+            const SizedBox(height: 30,),
             ListTile(
               leading: const Icon(Icons.arrow_back),
               title: const Text('Back'),
@@ -497,7 +502,7 @@ class _QuizPageState extends State<QuizPage> {
             children: [
               Container(
                 width: double.infinity,
-                height: 550,
+                // height: 550,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   color: const Color.fromRGBO(255, 255, 255, 0.6),
@@ -507,38 +512,77 @@ class _QuizPageState extends State<QuizPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Question Container
-                    Container(
-                      height: 120,
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: const Color.fromRGBO(255, 255, 255, 0.4),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Text(
-                            'Question $curr_q:',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 20,
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Question $curr_q'),
+                            content: SingleChildScrollView(
+                              child: Text(_newQuestion.text),
                             ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Close'),
+                              ),
+                            ],
                           ),
-                          Text(
-                            _newQuestion.text,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 20,
+                        );
+                      },
+                      child: Container(
+                        height: 120,
+                        width: double.infinity,
+                        padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: const Color.fromRGBO(255, 255, 255, 0.4),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Text(
+                              'Question $curr_q:',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
+                              ),
                             ),
-                          ),
-                        ],
+                            Text(
+                              _newQuestion.text,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
                     _newQuestion.isMultipleCorrect 
-                    ? const Text('\n   Choose one or more options')
+                    ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                      const Text('\n   Choose one or more options'),
+                      Container(
+                        width: 45,
+                        height: 25,
+                        margin: const EdgeInsets.fromLTRB(10, 12, 30, 0),
+                        decoration: BoxDecoration(
+                          color: Colors.grey,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Center(
+                          child:  Text('MSQ', style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 11,
+                          ),),
+                        ),
+                      ), 
+                      ],)
                     : const Text('\n   Choose any one option'),
 
                     // Options Area
@@ -571,13 +615,55 @@ class _QuizPageState extends State<QuizPage> {
                                     ),
                                   ),
                                 ),
-                                Flexible(child: Text(_newQuestion.opt[index])),
+                                
+                                // Flexible(child: Text(_newQuestion.opt[index], overflow: TextOverflow.ellipsis,)),
+                                Expanded(
+                                  child: Text(
+                                    _newQuestion.opt[index],
+                                    softWrap: true,
+                                    maxLines:
+                                        2, // Limiting to 2 lines for short options
+                                    overflow: TextOverflow
+                                        .ellipsis, // Add ellipsis for long text
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                
+                              ),
+
+                              
+
+                                IconButton(
+                                  icon: const Icon(Icons.remove_red_eye_outlined, size: 16,), // Eye icon
+                                  onPressed: () {
+                                  // This will show the modal for full text
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: const Text('Full Option Text'),
+                                          content: Text(_newQuestion.opt[index]),
+                                          actions: [
+                                            TextButton(
+                                              child: const Text('Close'),
+                                              onPressed: () {Navigator.of(context).pop();},
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                },
+                              ),
                               ],
                             ),
                           ),
                         );
                       },
                     ),
+
+                    const SizedBox(width: 10, height: 60,),
                   ],
                 ),
               ),
@@ -697,6 +783,8 @@ class _QuizPageState extends State<QuizPage> {
 
 
 
+
+
 class TestHeadingPage extends StatefulWidget {
   const TestHeadingPage({super.key, required this.title});
 
@@ -762,7 +850,7 @@ class _TestHeadingPageState extends State<TestHeadingPage> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF0DDC30), 
                             foregroundColor: Colors.white, 
-                            padding: const EdgeInsets.fromLTRB(30, 8, 30, 8),
+                            padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8), 
                             ),
@@ -941,7 +1029,10 @@ class _SubmitTestPageState extends State<SubmitTestPage> {
                       await saveResultToFirestore(curr_quiz);
                       DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
                       answeredTests.add({'ref': docRef, 'name': curr_quiz.name});
+                      user_dash.addToStats(curr_quiz.evalStats());
+                      user_dash.noAnsweredtests = answeredTests.length;
                       await updateAnsweredTestList(answeredTests);
+                      await storeDashboardData(user_dash);
                       await updateHomeInfo();
                       Navigator.pop(context);
                       Navigator.pop(context);
@@ -1133,6 +1224,64 @@ class _AutoSubmitPageState extends State<AutoSubmitPage> {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

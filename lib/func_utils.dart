@@ -22,6 +22,7 @@ List<dynamic> resultList = [];
 // ];
 
 Quiz curr_quiz = Quiz('', '', [], -1, '');
+Dashboard user_dash = Dashboard();
 
 class Question {
   Question(this.text, this.opt, this.mks, this.isCorrect, this.isMultipleCorrect);
@@ -304,6 +305,96 @@ class Result {
   }
 }
 
+class Dashboard {
+  String username = '';
+  List<int> stats = [0, 0, 0, 0];
+  int noAnsweredtests = 0;
+  int noCreatedtests = 0;
+
+  void addToStats(List<int> newValues) {
+    if (newValues.length != stats.length) {
+      throw Exception("The length of the new values list must be equal to the stats list.");
+    }
+
+    for (int i = 0; i < stats.length; i++) {
+      stats[i] += newValues[i]; // Index-wise addition
+    }
+  }
+}
+
+Future<void> storeDashboardData(Dashboard dashboard) async {
+  try {
+    final db = FirebaseFirestore.instance;
+
+    await db.collection('dashboard').doc(dashboard.username).set({
+      'username': dashboard.username,
+      'stats': dashboard.stats,
+      'noAnsweredTests': dashboard.noAnsweredtests,
+      'noCreatedTests': dashboard.noCreatedtests,
+    });
+
+    print("Dashboard data stored successfully.");
+  } catch (e) {
+    print("Error storing dashboard data: $e");
+  }
+}
+
+Future<Dashboard?> fetchDashboardData(String username) async {
+  try {
+    final db = FirebaseFirestore.instance;
+
+    DocumentSnapshot docSnapshot = await db.collection('dashboard').doc(username).get();
+
+    if (docSnapshot.exists) {
+      Dashboard dashboard = Dashboard();
+
+      // Extracting data and assigning to the object
+      dashboard.username = docSnapshot.get('username');
+      dashboard.stats = List<int>.from(docSnapshot.get('stats'));
+      dashboard.noAnsweredtests = docSnapshot.get('noAnsweredTests');
+      dashboard.noCreatedtests = docSnapshot.get('noCreatedTests');
+
+      print("Dashboard data retrieved successfully.");
+      return dashboard;
+    } else {
+      print("No dashboard data found for username: $username");
+      return null; // Return null if document doesn't exist
+    }
+  } catch (e) {
+    print("Error fetching dashboard data: $e");
+    return null;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Future<void> updateHomeInfo() async{
   createdTests = [];
   answeredTests = [];
@@ -319,6 +410,26 @@ Future<void> updateHomeInfo() async{
     final doc = await db.collection('users').doc(username).get();
     createdTests = doc['createdTests'];
     answeredTests = doc['answeredTests'];
+    Dashboard? tmp = await fetchDashboardData(username);
+    if(tmp != null) {
+      user_dash = tmp;
+    }
+    else {
+      print('No Dashoard');
+      user_dash.username = username;
+      user_dash.noAnsweredtests = answeredTests.length;
+      user_dash.noCreatedtests = createdTests.length;
+      for(int i=0 ; i<answeredTests.length ; i++) {
+        print('Errr 1');
+        curr_quiz =  await fetchQuizFromFirestore(answeredTests[i]['ref'].id) as Quiz;
+        print('Erro 2');
+        await fetchUserAnswers(username);
+        print('Error 3');
+        user_dash.addToStats(curr_quiz.evalStats());
+      }
+      print('Error Occured');
+      await storeDashboardData(user_dash);
+    }
     print(answeredTests);
   }
 

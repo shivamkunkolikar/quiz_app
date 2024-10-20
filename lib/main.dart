@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:quiz_app/dashboard_page.dart';
 import 'package:quiz_app/home_page.dart';
 import 'package:quiz_app/result_page.dart';
 import 'package:quiz_app/signup_page.dart';
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
       // home: SuccessSignupPage(),
       // home: TestadminPage(testId: 'XHQih2i0lZ6LsdePiKtx'),
       // home: HomePage(),
+      // home: const DashboardPage(),
 
     );
   }

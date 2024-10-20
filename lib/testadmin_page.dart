@@ -375,7 +375,7 @@ class _ResultListPageState extends State<ResultListPage> {
                           child: Text('${index + 1}'),
                         ),
                         title: Text(result.id),
-                        trailing: Text(result.marks.toString(),
+                        trailing: Text(result.marks.toStringAsFixed(2),
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 20
