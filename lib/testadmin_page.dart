@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:quiz_app/func_utils.dart';
 import 'package:quiz_app/createtest_page.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -86,22 +87,42 @@ class _TestadminPageState extends State<TestadminPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Test Code: $testId', style: const TextStyle(
-                  fontWeight: FontWeight.bold, 
-                  fontSize: 20, 
-                  color: Color(0xFF3F3F3F)),
+                Row(
+                  children: [
+                    Text('Test Code: $testId', style: const TextStyle(
+                      fontWeight: FontWeight.bold, 
+                      fontSize: 16, 
+                      color: Color(0xFF3F3F3F)),
+                    ),
+
+                    Material(
+                      color: Colors.transparent,
+                  
+                      borderRadius: BorderRadius.circular(8),
+                      child: InkWell(
+                        onTap: () async{
+                          await Clipboard.setData(ClipboardData(text: curr_quiz.id));
+                        },
+                        child: const SizedBox(
+                            child: Icon(Icons.copy, size: 14,),    
+                          
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 Text('Test Name: ${curr_quiz.name}', style: const TextStyle(
                   fontWeight: FontWeight.bold, 
-                  fontSize: 20, 
+                  fontSize: 16, 
                   color: Color(0xFF3F3F3F)),
                 ),
                 Text('Test Duration : ${curr_quiz.time}',style: const TextStyle(
                   fontWeight: FontWeight.bold, 
-                  fontSize: 20, 
+                  fontSize: 16, 
                   color: Color(0xFF3F3F3F)), 
                 
                 ),
+                
               ],
             ),
           ),
@@ -114,14 +135,14 @@ class _TestadminPageState extends State<TestadminPage> {
               color: const Color.fromRGBO(255, 255, 255, 0.6),
             ),
             margin: const EdgeInsets.all(10),
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(20, 10, 20,10),
 
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Activate Test: ',style: TextStyle(
                   fontWeight: FontWeight.bold, 
-                  fontSize: 20, 
+                  fontSize: 18, 
                   color: Color(0xFF3F3F3F)), 
                 
                 ),
@@ -158,7 +179,7 @@ class _TestadminPageState extends State<TestadminPage> {
               children: [
                 const Text('Details ',style: TextStyle(
                   fontWeight: FontWeight.bold, 
-                  fontSize: 22, 
+                  fontSize: 18, 
                   color: Color(0xFF3F3F3F)), 
                 
                 ),
@@ -168,14 +189,14 @@ class _TestadminPageState extends State<TestadminPage> {
                     children: [
                       const Text('No. of Students Answered: ',style: TextStyle(
                         fontWeight: FontWeight.bold, 
-                        fontSize: 18, 
+                        fontSize: 16, 
                         color: Color(0xFF3F3F3F)), 
                       
                       ),
 
                       Text(resultList.length.toString(), style: const TextStyle(
                         fontWeight: FontWeight.bold, 
-                        fontSize: 18, 
+                        fontSize: 16, 
                         color: Color(0xFF3F3F3F)), ),
                     ],
                   ),
@@ -210,14 +231,14 @@ class _TestadminPageState extends State<TestadminPage> {
                 children: [
                   Text('List of users answered test',style: TextStyle(
                       fontWeight: FontWeight.bold, 
-                      fontSize: 20, 
+                      fontSize: 18, 
                       color: Color(0xFF3F3F3F)), 
                     
                   ),
             
                   Icon(Icons.arrow_forward, 
                     color: Color(0xFF3F3F3F),
-                    size: 32,
+                    size: 28,
                   ),
                 ],
               ),

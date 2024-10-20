@@ -8,14 +8,12 @@ import 'dart:async';
 
 import 'package:quiz_app/result_page.dart';
 
-
 class AnswerTestPage extends StatefulWidget {
   @override
   _AnswerTestPageState createState() => _AnswerTestPageState();
 }
 
 class _AnswerTestPageState extends State<AnswerTestPage> {
-  
   final TextEditingController _testCodeController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -27,28 +25,30 @@ class _AnswerTestPageState extends State<AnswerTestPage> {
     }
 
     try {
-      DocumentReference docRef = FirebaseFirestore.instance.collection('tests').doc(testCode);
-      DocumentSnapshot doc = await _firestore.collection('tests').doc(testCode).get();
+      DocumentReference docRef =
+          FirebaseFirestore.instance.collection('tests').doc(testCode);
+      DocumentSnapshot doc =
+          await _firestore.collection('tests').doc(testCode).get();
 
       if (doc.exists) {
-
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         curr_quiz = Quiz.fromMap(doc.id, data);
         print('Quiz retrieved: ${curr_quiz.name}');
 
-        if(curr_quiz.isActive == false) {
+        if (curr_quiz.isActive == false) {
           _showErrorMessage('The test is Currently Inactive');
-        }
-        else if(answeredTests.contains(docRef)) {
+        } else if (answeredTests.contains(docRef)) {
           _showErrorMessage('Test Already Answered');
-        }
-        else if(curr_quiz.isComplete == false) {
+        } else if (curr_quiz.isComplete == false) {
           _showErrorMessage('The test code entered does not exist.');
+        } else {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const TestHeadingPage(
+                        title: 'H',
+                      )));
         }
-        else {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const TestHeadingPage(title: 'H',)));
-        }
-
       } else {
         _showErrorMessage('The test code entered does not exist.');
       }
@@ -93,71 +93,14 @@ class _AnswerTestPageState extends State<AnswerTestPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _fetchTestData,
         backgroundColor: Colors.blue,
-        child: const Icon(Icons.arrow_forward, color: Colors.white,),
+        child: const Icon(
+          Icons.arrow_forward,
+          color: Colors.white,
+        ),
       ),
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class FullScreenDrawer extends StatelessWidget {
   FullScreenDrawer();
@@ -214,6 +157,14 @@ class FullScreenDrawer extends StatelessWidget {
   }
 }
 
+Future<void> submitTestFunction() async {
+  final db = FirebaseFirestore.instance;
+  await saveResultToFirestore(curr_quiz);
+  DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
+  answeredTests.add({'ref': docRef, 'name': curr_quiz.name});
+  await updateAnsweredTestList(answeredTests);
+  await updateHomeInfo();
+}
 
 class QuizPage extends StatefulWidget {
   const QuizPage({super.key});
@@ -225,8 +176,8 @@ class QuizPage extends StatefulWidget {
 class _QuizPageState extends State<QuizPage> {
   Timer? _timer;
   int curr_q = 1;
-  int time_left = curr_quiz.time - 1; 
-  int time_left_sec = 59; 
+  int time_left = curr_quiz.time - 1;
+  int time_left_sec = 59;
   Question _newQuestion = curr_quiz.at_loc(1);
 
   @override
@@ -239,9 +190,15 @@ class _QuizPageState extends State<QuizPage> {
     if (_timer != null) {
       _timer!.cancel();
     }
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (time_left == 0 && time_left_sec == 0) {
         _timer!.cancel();
+
+        await submitTestFunction();
+        Navigator.pop(context);
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => SuccessSubmitPage()));
+
         // Time is up, handle the end of the quiz
       } else {
         setState(() {
@@ -260,12 +217,13 @@ class _QuizPageState extends State<QuizPage> {
 
   void _getQuestion(int index) {
     if (index > curr_quiz.que.length) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => SubmitTestPage()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => SubmitTestPage()));
     } else if (index < 1) {
       // Do nothing
     } else {
       curr_q = index;
-      curr_quiz.que[index-1].isVisited = true;
+      curr_quiz.que[index - 1].isVisited = true;
       setState(() {
         _newQuestion = curr_quiz.at_loc(index);
       });
@@ -282,54 +240,48 @@ class _QuizPageState extends State<QuizPage> {
   int curr_ind = -1;
   void _setCurrInd(int curr, int index) {
     setState(() {
-      if(curr_quiz.que[curr-1].isMultipleCorrect == true) {
-        curr_quiz.que[curr-1].userAns[index] = curr_quiz.que[curr-1].userAns[index] ? false : true;
-      }
-      else {
-        for(int i=0 ; i<4 ; i++) {
-          curr_quiz.que[curr-1].userAns[i] = false;
+      if (curr_quiz.que[curr - 1].isMultipleCorrect == true) {
+        curr_quiz.que[curr - 1].userAns[index] =
+            curr_quiz.que[curr - 1].userAns[index] ? false : true;
+      } else {
+        for (int i = 0; i < 4; i++) {
+          curr_quiz.que[curr - 1].userAns[i] = false;
         }
-        curr_quiz.que[curr-1].userAns[index] = curr_quiz.que[curr-1].userAns[index] ? false : true;
+        curr_quiz.que[curr - 1].userAns[index] =
+            curr_quiz.que[curr - 1].userAns[index] ? false : true;
       }
     });
   }
 
   void _clearAll() {
     setState(() {
-        for(int i=0 ; i<4 ; i++) {
-          curr_quiz.que[curr_q-1].userAns[i] = false;
-        }
+      for (int i = 0; i < 4; i++) {
+        curr_quiz.que[curr_q - 1].userAns[i] = false;
       }
-    );
+    });
   }
 
   dynamic retBgCol(int curr, int index) {
-    if (curr_quiz.que[curr-1].userAns[index] == true) {
+    if (curr_quiz.que[curr - 1].userAns[index] == true) {
       return Colors.white;
-    }
-    else {
+    } else {
       return Colors.transparent;
     }
   }
 
   dynamic retGridBg(int curr) {
-    if(curr == 1) {
-      if(curr_quiz.que[curr - 1].checkifUnattemted()){
+    if (curr == 1) {
+      if (curr_quiz.que[curr - 1].checkifUnattemted()) {
         return Colors.red;
-      }
-      else {
+      } else {
         return Colors.green;
       }
-
-    }
-    else if(curr_quiz.que[curr - 1].isVisited == false) {
+    } else if (curr_quiz.que[curr - 1].isVisited == false) {
       return Colors.grey[350];
-    }
-    else {
-      if(curr_quiz.que[curr - 1].checkifUnattemted()) {
+    } else {
+      if (curr_quiz.que[curr - 1].checkifUnattemted()) {
         return Colors.red;
-      }
-      else {
+      } else {
         return Colors.green;
       }
     }
@@ -340,11 +292,12 @@ class _QuizPageState extends State<QuizPage> {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          // colors: [Color(0xFFFF007A), Color(0xFFFF3939)],
-          colors: [Color.fromARGB(255, 0, 148, 255), Color.fromARGB(255, 0, 148, 255)]
-        ),
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color.fromARGB(255, 0, 148, 255),
+              Color.fromARGB(255, 0, 148, 255)
+            ]),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -352,99 +305,71 @@ class _QuizPageState extends State<QuizPage> {
           title: Text('Time Left: $time_left:$time_left_sec mins'),
         ),
         drawer: Container(
-      width: MediaQuery.of(context).size.width,
-      child: Drawer(
-        child: Column(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.arrow_back),
-              title: const Text('Back'),
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5, // Adjust the number of columns as needed
-                  crossAxisSpacing: 10.0,
-                  mainAxisSpacing: 10.0,
+          width: MediaQuery.of(context).size.width,
+          child: Drawer(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.arrow_back),
+                  title: const Text('Back'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
                 ),
-                padding: const EdgeInsets.all(10.0),
-                itemCount: curr_quiz.que.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      _getQuestion(index+1);
-                      curr_quiz.que[index].isVisited = true;
-                      Navigator.pop(context);
-                    },
-                    child: CircleAvatar(
-                      backgroundColor: retGridBg(index + 1),
-                      radius: 5,
-                      child: Text('${index + 1}'),
+                Expanded(
+                  child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:
+                          5, // Adjust the number of columns as needed
+                      crossAxisSpacing: 10.0,
+                      mainAxisSpacing: 10.0,
                     ),
-                  );
-                },
-              ),
+                    padding: const EdgeInsets.all(10.0),
+                    itemCount: curr_quiz.que.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          _getQuestion(index + 1);
+                          curr_quiz.que[index].isVisited = true;
+                          Navigator.pop(context);
+                        },
+                        child: CircleAvatar(
+                          backgroundColor: retGridBg(index + 1),
+                          radius: 5,
+                          child: Text('${index + 1}'),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      print('Submit button pressed');
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SubmitTestPage()));
+                    },
+                    child: const Text('Submit'),
+                  ),
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  print('Submit button pressed');
-                  Navigator.push(context, MaterialPageRoute(builder: (context) =>  SubmitTestPage()));
-                },
-                child: const Text('Submit'),
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
-    ),
-        // SizedBox(
-        //   width: MediaQuery.of(context).size.width, // Full screen width
-        //   child: Drawer(
-        //     child: ListView(
-        //       padding: EdgeInsets.zero,
-        //       children: [
-        //         const DrawerHeader(
-        //           decoration: BoxDecoration(
-        //             color: Colors.blue,
-        //           ),
-        //           child: Text(
-        //             'Drawer Header',
-        //             style: TextStyle(
-        //               color: Colors.white,
-        //               fontSize: 24,
-        //             ),
-        //           ),
-        //         ),
-        //         ListTile(
-        //           leading: Icon(Icons.info),
-        //           title: Text('About'),
-        //           onTap: () {
-        //             Navigator.pop(context);
-        //             // Navigate to about screen or any other action
-        //           },
-        //         ),
-        //         // Container(
-        //         //   child: GridView.count(crossAxisCount: 5,
-        //         //     children: [],
-        //         //   ),
-        //         //),
-        //       ],
-        //     ),
-        //   ),
-        // ),
         bottomNavigationBar: BottomAppBar(
           color: const Color.fromRGBO(255, 255, 255, 0.75),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              OutlinedButton(onPressed: () {
-                 _clearAll();
-              }, child: const Text('Clear')),
+              OutlinedButton(
+                  onPressed: () {
+                    _clearAll();
+                  },
+                  child: const Text('Clear')),
               Row(
                 children: [
                   ElevatedButton(
@@ -456,9 +381,7 @@ class _QuizPageState extends State<QuizPage> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      
                       _getQuestion(curr_q + 1);
-
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromRGBO(6, 189, 0, 1),
@@ -486,132 +409,215 @@ class _QuizPageState extends State<QuizPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Question Container
-                    Container(
-                      height: 120,
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: const Color.fromRGBO(255, 255, 255, 0.4),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Text(
-                            'Question $curr_q:',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 20,
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Question $curr_q'),
+                            content: SingleChildScrollView(
+                              child: Text(_newQuestion.text),
                             ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Close'),
+                              ),
+                            ],
                           ),
-                          Text(
-                            _newQuestion.text,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 20,
+                        );
+                      },
+                      child: Container(
+                        height: 120,
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: const Color.fromRGBO(255, 255, 255, 0.4),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Text(
+                              'Question $curr_q:',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
+                              ),
                             ),
-                          ),
-                        ],
+                            Expanded(
+                              child: Text(
+                                _newQuestion.text,
+                                softWrap: true,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
-                    _newQuestion.isMultipleCorrect 
-                    ? const Text('\n   Choose one or more options')
-                    : const Text('\n   Choose any one option'),
+                    _newQuestion.isMultipleCorrect
+                        ? const Text('\n   Choose one or more options')
+                        : const Text('\n   Choose any one option'),
 
-                    // Options Area
+                    // Options Area with Scrollable Text and Dialog for Full View
                     ListView.builder(
                       itemCount: _newQuestion.opt.length,
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () => _setCurrInd(curr_q, index),
-                          child: Container(
-                            height: 50,
-                            margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: const Color.fromARGB(190, 255, 255, 255)),
-                              borderRadius: BorderRadius.circular(12),
-                              color: retBgCol(curr_q, index),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                                  child: CircleAvatar(
-                                    backgroundColor: Colors.white,
-                                    radius: 10,
-                                    child: Text(
-                                      '${index + 1}',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                      ),
+                        return Container(
+                          height: 50,
+                          margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                                color:
+                                    const Color.fromARGB(190, 255, 255, 255)),
+                            borderRadius: BorderRadius.circular(12),
+                            color: retBgCol(curr_q, index),
+                          ),
+                          child: Row(
+                            children: [
+                              // Circle Avatar to show option number
+                              Container(
+                                margin:
+                                    const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                                child: CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  radius: 10,
+                                  child: Text(
+                                    '${index + 1}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ),
-                                Text(_newQuestion.opt[index]),
-                              ],
-                            ),
+                              ),
+
+                              // Expanded to allow text to fill available space
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    // This will handle the option selection
+                                    _setCurrInd(curr_q, index);
+                                  },
+                                  child: Text(
+                                    _newQuestion.opt[index],
+                                    softWrap: true,
+                                    maxLines:
+                                        2, // Limiting to 2 lines for short options
+                                    overflow: TextOverflow
+                                        .ellipsis, // Add ellipsis for long text
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // Icon to open the full text modal
+                              IconButton(
+                                icon: const Icon(
+                                    Icons.remove_red_eye_outlined), // Eye icon
+                                onPressed: () {
+                                  // This will show the modal for full text
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: const Text('Full Option Text'),
+                                        content: Text(_newQuestion.opt[index]),
+                                        actions: [
+                                          TextButton(
+                                            child: const Text('Close'),
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                         );
                       },
                     ),
+
+                    Container(
+                      width: double.infinity,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color: const Color.fromRGBO(255, 255, 255, 0.6),
+                      ),
+                      margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.done,
+                                color: Colors.green,
+                              ),
+                              Text(
+                                ': ${_newQuestion.mks[0]}',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.close,
+                                color: Colors.red,
+                              ),
+                              Text(
+                                ': ${_newQuestion.mks[1]}',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.format_underline_sharp,
+                                color: Colors.black,
+                              ),
+                              Text(
+                                ': ${_newQuestion.mks[2]}',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-
-
-
-              Container(
-                width: double.infinity,
-                height: 50,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: const Color.fromRGBO(255, 255, 255, 0.6),
-                ),
-                margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.done, color: Colors.green,),
-                        Text(': ${_newQuestion.mks[0]}', style: const TextStyle(
-                          fontSize: 20,
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),),
-                      ],
-                    ),
-
-                    Row(
-                      children: [
-                        const Icon(Icons.close, color: Colors.red,),
-                        Text(': ${_newQuestion.mks[1]}', style: const TextStyle(
-                          fontSize: 20,
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                        ),),
-                      ],
-                    ),
-
-                    Row(
-                      children: [
-                        const Icon(Icons.format_underline_sharp, color: Colors.black,),
-                        Text(': ${_newQuestion.mks[2]}', style: const TextStyle(
-                          fontSize: 20,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-
-
             ],
           ),
         ),
@@ -626,56 +632,6 @@ class _QuizPageState extends State<QuizPage> {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class TestHeadingPage extends StatefulWidget {
   const TestHeadingPage({super.key, required this.title});
 
@@ -686,16 +642,14 @@ class TestHeadingPage extends StatefulWidget {
 }
 
 class _TestHeadingPageState extends State<TestHeadingPage> {
-  
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0094FF), Color(0xFF0094FF)]
-        ),
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0094FF), Color(0xFF0094FF)]),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -710,36 +664,42 @@ class _TestHeadingPageState extends State<TestHeadingPage> {
                 height: 30,
                 color: Colors.transparent,
                 margin: const EdgeInsets.symmetric(horizontal: 10),
-          
               ),
               Container(
                 height: 500,
                 width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   color: const Color.fromRGBO(255, 255, 255, 0.6),
                 ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Hello World'),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const QuizPage()));
-
-                      },
-                      
-                      child: const Text('Start Test'), 
+                    const TestDescription(),
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.fromLTRB(0, 0, 0, 30),
+                      child: Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const QuizPage()));
+                          },
+                          child: const Text('Start Test'),
+                        ),
+                      ),
                     ),
-
                   ],
                 ),
-                
               ),
               Container(
                 height: 200,
@@ -759,17 +719,65 @@ class _TestHeadingPageState extends State<TestHeadingPage> {
   }
 }
 
-class TestDiscription extends StatelessWidget {
-  const TestDiscription({super.key, required String this.test_info});
-  final String test_info;
+class TestDescription extends StatelessWidget {
+  const TestDescription({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      // decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+      margin: const EdgeInsets.fromLTRB(22, 30, 10, 10),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(curr_quiz.name),
-          Text('$test_info'),
+          Text(
+            curr_quiz.name,
+            style: const TextStyle(
+              fontSize: 24,
+              color: Color(0xFF00599A),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Text('Test Duration : ${curr_quiz.time} minutes'),
+          Text('Test Creator  : ${curr_quiz.userName}'),
+          Row(
+            children: [
+              const Text('Press '),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromRGBO(6, 189, 0, 1),
+                ),
+                child: const Text('Next'),
+              ),
+              const Text(' To go to next Question')
+            ],
+          ),
+          Row(
+            children: [
+              const Text('Press '),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromRGBO(255, 145, 0, 1),
+                ),
+                child: const Text('Prev'),
+              ),
+              const Text(' To go to previous Question'),
+            ],
+          ),
+          Row(
+            children: [
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromRGBO(255, 145, 0, 1),
+                ),
+                child: const Text('Prev'),
+              ),
+              const Text(' To go to previous Question'),
+            ],
+          ),
         ],
       ),
     );
@@ -788,10 +796,10 @@ class TestStartInterface extends StatelessWidget {
           const Text('Download Animation'),
           ElevatedButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const QuizPage()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const QuizPage()));
             },
-             
-            child: const Text('Start Test'), 
+            child: const Text('Start Test'),
           ),
         ],
       ),
@@ -799,46 +807,27 @@ class TestStartInterface extends StatelessWidget {
   }
 }
 
+class SubmitTestPage extends StatefulWidget {
+  const SubmitTestPage({super.key});
 
+  @override
+  State<SubmitTestPage> createState() => _SubmitTestPageState();
+}
 
+class _SubmitTestPageState extends State<SubmitTestPage> {
+  bool isLoading = false;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class SubmitTestPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue, 
+      backgroundColor: Colors.blue,
       body: Center(
         child: Container(
-          width: double.infinity, 
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+          width: double.infinity,
           margin: const EdgeInsets.all(10.0),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.6), 
+            color: Colors.white.withOpacity(0.6),
             borderRadius: BorderRadius.circular(20.0),
           ),
           child: Column(
@@ -850,7 +839,7 @@ class SubmitTestPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Color(0xFF4E4E4E),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -862,7 +851,7 @@ class SubmitTestPage extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 18.0,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Color(0xFF4E4E4E),
                 ),
                 textAlign: TextAlign.left,
               ),
@@ -872,39 +861,69 @@ class SubmitTestPage extends StatelessWidget {
                 children: [
                   OutlinedButton(
                     onPressed: () {
-                      Navigator.pop(context); 
+                      Navigator.pop(context);
                     },
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.grey[300], 
-                      foregroundColor: Colors.black, 
-                      padding: const EdgeInsets.symmetric( horizontal: 15.0, vertical: 15.0),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: const Color(0xFF4E4E4E),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30.0, vertical: 15.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    child: const Text('Go Back'),
+                    child: const Text(
+                      'Go Back',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
                   ),
                   ElevatedButton(
-                    onPressed: () async{
-                      
+                    onPressed: () async {
+                      setState(() {
+                        isLoading = true;
+                      });
                       final db = FirebaseFirestore.instance;
                       await saveResultToFirestore(curr_quiz);
-                      DocumentReference docRef = db.collection('tests').doc(curr_quiz.id);
-                      answeredTests.add({'ref': docRef, 'name': curr_quiz.name});
+                      DocumentReference docRef =
+                          db.collection('tests').doc(curr_quiz.id);
+                      answeredTests
+                          .add({'ref': docRef, 'name': curr_quiz.name});
                       await updateAnsweredTestList(answeredTests);
                       await updateHomeInfo();
                       Navigator.pop(context);
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (context) =>  HomePage()));
-
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SuccessSubmitPage()));
+                      setState(() {
+                        isLoading = false;
+                      });
                       print("Test Submitted");
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green, 
-                      foregroundColor: Colors.white, 
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 30.0, vertical: 15.0),
+                          horizontal: 20.0, vertical: 15.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    child: const Text('Submit Test'),
+                    child: isLoading == true
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : const Text('Submit Test'),
                   ),
+                  const SizedBox(
+                    height: 20,
+                  )
                 ],
               ),
             ],
@@ -915,6 +934,77 @@ class SubmitTestPage extends StatelessWidget {
   }
 }
 
+class SuccessSubmitPage extends StatefulWidget {
+  @override
+  State<SuccessSubmitPage> createState() => _SuccessSubmitPageState();
+}
 
-
-
+class _SuccessSubmitPageState extends State<SuccessSubmitPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF00A1E4), // Light blue background color
+      body: Center(
+        child: SingleChildScrollView(
+          child: Container(
+            width: double.infinity,
+            height: 420,
+            decoration: BoxDecoration(
+              color: const Color(0xFFB3E5FC),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            margin: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Test Submitted Successfully',
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF4E4E4E),
+                  ),
+                ),
+                const CircleAvatar(
+                  radius: 36,
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.done,
+                    color: Colors.green,
+                    size: 32,
+                  ),
+                ),
+                Material(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(8),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => HomePage()));
+                    },
+                    child: const SizedBox(
+                      height: 50,
+                      width: double.infinity,
+                      child: Center(
+                        child: Text(
+                          "Done",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

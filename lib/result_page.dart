@@ -1,5 +1,6 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:quiz_app/createtest_page.dart';
+// import 'package:quiz_app/createtest_page.dart';
 import 'package:quiz_app/func_utils.dart';
 
 class ResultPage extends StatefulWidget {
@@ -12,48 +13,308 @@ class ResultPage extends StatefulWidget {
 class _ResultPageState extends State<ResultPage> {
   @override
   Widget build(BuildContext context) {
+    double score = curr_quiz.evaluateTest();
+    double accur = curr_quiz.evaluteAccuracy();
+    List<int> stats = curr_quiz.evalStats();
+
     return Scaffold(
-      body: Container(
-        child: Text('marks = ${curr_quiz.evaluateTest()}'),
-      ),
-    );
+        backgroundColor: const Color(0xFF0094FF),
+        appBar: AppBar(
+          leading: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: const Icon(Icons.arrow_back)),
+          title: const Text('Result Page'),
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.fromLTRB(10, 30, 10, 10),
+                padding: const EdgeInsets.fromLTRB(20, 15, 10, 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: const Color.fromRGBO(255, 255, 255, 0.6),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Your Score',
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF4E4E4E)),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.fromLTRB(0, 15, 15, 0),
+                          // color: Colors.amber,
+                          width: 80,
+                          height: 80,
+                          child: PieChart(
+                            PieChartData(
+                              sections: [
+                                PieChartSectionData(
+                                    color: Colors.green,
+                                    value: score.toDouble(),
+                                    showTitle: false,
+                                    radius: 8),
+                                PieChartSectionData(
+                                  color: Colors.grey,
+                                  value: (curr_quiz.calcTotal().toDouble() -
+                                          score.toDouble())
+                                      .toDouble(),
+                                  showTitle: false,
+                                  radius: 8,
+                                ),
+                              ],
+                              centerSpaceRadius: 24, // Space in the center
+                              sectionsSpace: 2,
+                              startDegreeOffset: 270,
+                            ),
+                          ),
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              ' ${score.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF4E4E4E)),
+                            ),
+                            Text(
+                              '/${curr_quiz.calcTotal()}',
+                              style: const TextStyle(
+                                color: Color(0xFF4E4E4E),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                padding: const EdgeInsets.fromLTRB(20, 15, 10, 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: const Color.fromRGBO(255, 255, 255, 0.6),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Details',
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF4E4E4E)),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Total Questions      : ${curr_quiz.que.length}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            'Attemted Questions   : ${curr_quiz.que.length - stats[2]}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            'Unattemted Questions : ${stats[2]}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            'Correct  Questions   : ${stats[0]}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            'Partially Correct    : ${stats[1]}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            'Incorrect Questions  : ${stats[3]}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Center(
+                            child: Container(
+                              margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                              // color: Colors.amber,
+                              width: 300,
+                              height: 300,
+                              child: PieChart(PieChartData(
+                                sections: [
+                                  PieChartSectionData(
+                                    color: Colors.green,
+                                    value: stats[0].toDouble(),
+                                    radius: 100,
+                                    showTitle: false,
+                                  ),
+                                  PieChartSectionData(
+                                    color: Colors.amber[200],
+                                    value: stats[1].toDouble(),
+                                    radius: 100,
+                                    showTitle: false,
+                                  ),
+                                  PieChartSectionData(
+                                    color: Colors.red,
+                                    value: stats[3].toDouble(),
+                                    radius: 100,
+                                    showTitle: false,
+                                  ),
+                                  PieChartSectionData(
+                                    color: Colors.grey,
+                                    value: stats[2].toDouble(),
+                                    radius: 100,
+                                    showTitle: false,
+                                  ),
+                                ],
+                                centerSpaceRadius: 0, // Space in the center
+                                sectionsSpace: 0,
+                                startDegreeOffset: 270,
+                              )),
+                            ),
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                padding: const EdgeInsets.fromLTRB(20, 15, 10, 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: const Color.fromRGBO(255, 255, 255, 0.6),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Accuracy',
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF4E4E4E)),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Your Accuracy is ${accur.toStringAsFixed(2)}%',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Center(
+                            child: Container(
+                              margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                              // color: Colors.amber,
+                              width: 300,
+                              height: 300,
+                              child: PieChart(PieChartData(
+                                sections: [
+                                  PieChartSectionData(
+                                    color: Colors.green,
+                                    value: accur.toDouble(),
+                                    radius: 100,
+                                    showTitle: false,
+                                  ),
+                                  PieChartSectionData(
+                                    color: Colors.red,
+                                    value: (100.toDouble() - accur.toDouble())
+                                        .toDouble(),
+                                    radius: 100,
+                                    showTitle: false,
+                                  ),
+                                ],
+                                centerSpaceRadius: 0, // Space in the center
+                                sectionsSpace: 0,
+                                startDegreeOffset: 270,
+                              )),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.all(10),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: const Color.fromRGBO(255, 255, 255, 0.6)),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const StatusPage(),
+                      ),
+                    );
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Check All Answers',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF4E4E4E),
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward,
+                        color: Color(0xFF4E4E4E),
+                      )
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
+        ));
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class StatusPage extends StatefulWidget {
   const StatusPage({super.key});
@@ -63,9 +324,8 @@ class StatusPage extends StatefulWidget {
 }
 
 class _StatusPageState extends State<StatusPage> {
-  int curr_q = 1; 
+  int curr_q = 1;
   Question _newQuestion = curr_quiz.at_loc(1);
-
 
   void _getQuestion(int index) {
     if (index > curr_quiz.que.length) {
@@ -74,7 +334,7 @@ class _StatusPageState extends State<StatusPage> {
       // Do nothing
     } else {
       curr_q = index;
-      curr_quiz.que[index-1].isVisited = true;
+      curr_quiz.que[index - 1].isVisited = true;
       setState(() {
         _newQuestion = curr_quiz.at_loc(index);
       });
@@ -91,48 +351,50 @@ class _StatusPageState extends State<StatusPage> {
   int curr_ind = -1;
   void _setCurrInd(int curr, int index) {
     setState(() {
-      if(curr_quiz.que[curr-1].isMultipleCorrect == true) {
-        curr_quiz.que[curr-1].userAns[index] = curr_quiz.que[curr-1].userAns[index] ? false : true;
-      }
-      else {
-        for(int i=0 ; i<4 ; i++) {
-          curr_quiz.que[curr-1].userAns[i] = false;
+      if (curr_quiz.que[curr - 1].isMultipleCorrect == true) {
+        curr_quiz.que[curr - 1].userAns[index] =
+            curr_quiz.que[curr - 1].userAns[index] ? false : true;
+      } else {
+        for (int i = 0; i < 4; i++) {
+          curr_quiz.que[curr - 1].userAns[i] = false;
         }
-        curr_quiz.que[curr-1].userAns[index] = curr_quiz.que[curr-1].userAns[index] ? false : true;
+        curr_quiz.que[curr - 1].userAns[index] =
+            curr_quiz.que[curr - 1].userAns[index] ? false : true;
       }
     });
   }
 
   dynamic retBgCol(int curr, int index) {
-    if (curr_quiz.que[curr-1].isCorrect[index] == true) {
-      return Color.fromARGB(108, 76, 175, 79);
-    }
-    else if(curr_quiz.que[curr-1].userAns[index] == true) {
+    if (curr_quiz.que[curr - 1].isCorrect[index] == true) {
+      return const Color.fromARGB(108, 76, 175, 79);
+    } else if (curr_quiz.que[curr - 1].userAns[index] == true) {
       return const Color.fromARGB(113, 244, 67, 54);
-    }
-    else {
+    } else {
       return Colors.transparent;
     }
   }
 
+  dynamic retCircleCol(int curr, int index) {
+    if (curr_quiz.que[curr - 1].userAns[index] == true) {
+      return const Color.fromARGB(99, 47, 255, 64);
+    } else {
+      return Colors.white;
+    }
+  }
+
   dynamic retGridBg(int curr) {
-    if(curr == 1) {
-      if(curr_quiz.que[curr - 1].checkifUnattemted()){
+    if (curr == 1) {
+      if (curr_quiz.que[curr - 1].checkifUnattemted()) {
         return Colors.red;
-      }
-      else {
+      } else {
         return Colors.green;
       }
-
-    }
-    else if(curr_quiz.que[curr - 1].isVisited == false) {
+    } else if (curr_quiz.que[curr - 1].isVisited == false) {
       return Colors.grey[350];
-    }
-    else {
-      if(curr_quiz.que[curr - 1].checkifUnattemted()) {
+    } else {
+      if (curr_quiz.que[curr - 1].checkifUnattemted()) {
         return Colors.red;
-      }
-      else {
+      } else {
         return Colors.green;
       }
     }
@@ -145,8 +407,10 @@ class _StatusPageState extends State<StatusPage> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          // colors: [Color(0xFFFF007A), Color(0xFFFF3939)],
-          colors: [Color.fromARGB(255, 0, 148, 255), Color.fromARGB(255, 0, 148, 255)]
+          colors: [
+            Color.fromARGB(255, 0, 148, 255),
+            Color.fromARGB(255, 0, 148, 255)
+          ],
         ),
       ),
       child: Scaffold(
@@ -154,34 +418,36 @@ class _StatusPageState extends State<StatusPage> {
         appBar: AppBar(
           title: const Text('Report'),
         ),
-        
-        
         bottomNavigationBar: BottomAppBar(
           color: const Color.fromRGBO(255, 255, 255, 0.75),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: () => _getQuestion(curr_q - 1),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromRGBO(255, 145, 0, 1),
-                    ),
-                    child: const Text('Prev'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      
-                      _getQuestion(curr_q + 1);
-
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromRGBO(6, 189, 0, 1),
-                    ),
-                    child: const Text('Next'),
-                  ),
-                ],
+            children: [
+              // Disable 'Prev' if on the first question
+              ElevatedButton(
+                onPressed: curr_q > 1 ? () => _getQuestion(curr_q - 1) : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: curr_q > 1
+                      ? const Color.fromRGBO(255, 145, 0, 1)
+                      : Colors.grey,
+                ),
+                child: const Text('Prev'),
               ),
-          
+
+              // Disable 'Next' if on the last question
+              ElevatedButton(
+                onPressed: curr_q < curr_quiz.que.length
+                    ? () => _getQuestion(curr_q + 1)
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: curr_q < curr_quiz.que.length
+                      ? const Color.fromRGBO(6, 189, 0, 1)
+                      : Colors.grey,
+                ),
+                child: const Text('Next'),
+              ),
+            ],
+          ),
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -198,62 +464,102 @@ class _StatusPageState extends State<StatusPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Question Container
-                    Container(
-                      height: 120,
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: const Color.fromRGBO(255, 255, 255, 0.4),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Text(
-                            'Question $curr_q:',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 20,
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Question $curr_q'),
+                            content: SingleChildScrollView(
+                              child: Text(_newQuestion.text),
                             ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Close'),
+                              ),
+                            ],
                           ),
-                          Text(
-                            _newQuestion.text,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 20,
+                        );
+                      },
+                      child: Container(
+                        height: 120,
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: const Color.fromRGBO(255, 255, 255, 0.4),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Text(
+                              'Question $curr_q:',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
+                              ),
                             ),
-                          ),
-                        ],
+                            Expanded(
+                              child: Text(
+                                _newQuestion.text,
+                                softWrap: true,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-
-                    _newQuestion.isMultipleCorrect 
-                    ? const Text('\n   Choose one or more options')
-                    : const Text('\n   Choose any one option'),
-
-                    // Options Area
+                    _newQuestion.isMultipleCorrect
+                        ? const Text('\n   Choose one or more options')
+                        : const Text('\n   Choose any one option'),
                     ListView.builder(
                       itemCount: _newQuestion.opt.length,
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
                         return GestureDetector(
-                          onTap: () {},
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text('Option ${index + 1}'),
+                                content: SingleChildScrollView(
+                                  child: Text(_newQuestion.opt[index]),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('Close'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                           child: Container(
                             height: 50,
                             margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
                             decoration: BoxDecoration(
-                              border: Border.all(color: const Color.fromARGB(190, 255, 255, 255)),
+                              border: Border.all(
+                                  color:
+                                      const Color.fromARGB(190, 255, 255, 255)),
                               borderRadius: BorderRadius.circular(12),
                               color: retBgCol(curr_q, index),
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                                  margin:
+                                      const EdgeInsets.fromLTRB(10, 10, 10, 10),
                                   child: CircleAvatar(
-                                    backgroundColor: Colors.white,
+                                    backgroundColor:
+                                        retCircleCol(curr_q, index),
                                     radius: 10,
                                     child: Text(
                                       '${index + 1}',
@@ -263,7 +569,18 @@ class _StatusPageState extends State<StatusPage> {
                                     ),
                                   ),
                                 ),
-                                Text(_newQuestion.opt[index]),
+                                Expanded(
+                                  child: Text(
+                                    _newQuestion.opt[index],
+                                    softWrap: true,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -273,45 +590,70 @@ class _StatusPageState extends State<StatusPage> {
                   ],
                 ),
               ),
-
-
-
               Container(
                 width: double.infinity,
-                height: 50,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   color: const Color.fromRGBO(255, 255, 255, 0.6),
                 ),
                 margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                padding: const EdgeInsets.fromLTRB(20, 10, 10, 10),
                 child: Column(
                   children: [
                     Row(
                       children: [
-                        const Text('Status: '),
-                        Text(_newQuestion.returnStatus()),
+                        const Text(
+                          'Status: ',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF4E4E4E),
+                          ),
+                        ),
+                        Text(
+                          _newQuestion.returnStatus(),
+                          style: TextStyle(
+                            color: _newQuestion.returnStatus() == 'Correct'
+                                ? const Color(0xFF04CC00)
+                                : _newQuestion.returnStatus() == 'Incorrect'
+                                    ? Colors.red
+                                    : _newQuestion.returnStatus() ==
+                                            'Partial Correct'
+                                        ? const Color(0xFFFFC700)
+                                        : const Color(0xFF4E4E4E),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
-
                     Row(
                       children: [
-                        const Text('Marks Awarded: '),
-                        Text(_newQuestion.evalQuestion().toString()),
+                        const Text(
+                          'Marks Awarded: ',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF4E4E4E),
+                          ),
+                        ),
+                        Text(
+                          _newQuestion.evalQuestion().toStringAsFixed(2),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF4E4E4E),
+                          ),
+                        ),
                       ],
                     )
                   ],
-                )
-                  
-                
+                ),
               ),
-
-
-
             ],
           ),
         ),
       ),
     );
   }
-
 }
