@@ -183,7 +183,7 @@ class _LoginPageState extends State<LoginPage> {
                             height: 50,
                             width: double.infinity,
                             child: Center(
-                              child: const CircularProgressIndicator(
+                              child: CircularProgressIndicator(
                                 color: Colors.white,
                                 strokeWidth: 4,
                               )

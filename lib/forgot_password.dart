@@ -1,5 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:quiz_app/func_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
+
+
+
+
 
 class ForgotPasswordPage extends StatefulWidget {
   @override
@@ -14,25 +21,53 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   // final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  void resetPassword() async {
+  Future<void> resetPassword(username, eemail) async {
     // String email = _emailPhoneController.text.trim();
-
-    if (_newPasswordController.text != _confirmPasswordController.text) {
+    if(_newPasswordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
+        const SnackBar(content: Text('Passwords Do Not match'))
       );
-      return;
     }
-
+    else {
     try {
-      // await _auth.sendPasswordResetEmail(email: email);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password reset email sent')),
-      );
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot userDoc = await firestore.collection('users').doc(username).get();
+
+      if (userDoc.exists) {
+        String storedPassword = userDoc['email'];
+        if (storedPassword == eemail) {
+
+            Map<String, dynamic> userMap = {
+              'username': userDoc['username'],
+              'password': _newPasswordController.text,
+              'email': userDoc['email'],
+              'name': userDoc['name'],
+              'phno': userDoc['phno'],
+              'institute': userDoc['institute'],
+              'createdTests': userDoc['createdTests'],
+              'answeredTests': userDoc['createdTests'],
+          };
+
+          CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
+          await usersCollection.doc(username).set(userMap);
+          email = userDoc['email'];
+          final prefs = await SharedPreferences.getInstance();
+          prefs.setString('username', username);
+          prefs.setString('email', email);
+          print('Done');
+          // return true;
+        } else {
+          // return false;
+          print('false');
+        }
+      } else {
+        print('false');
+        // return false;
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+      print('Error fetching user credentials: $e');
+      // return false;
+    }
     }
   }
 
@@ -83,7 +118,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       TextFormField(
                         controller: _emailPhoneController,
                         decoration: const InputDecoration(
-                          labelText: "Email / Phone no.",
+                          labelText: "Email ",
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -122,7 +157,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         color: Colors.green,
                         borderRadius: BorderRadius.circular(8),
                         child: InkWell(
-                          onTap: resetPassword,
+                          onTap: () async{ await resetPassword(_usernameController.text, _emailPhoneController.text);},
                           child: const SizedBox(
                             height: 50,
                             width: double.infinity,

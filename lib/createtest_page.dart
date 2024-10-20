@@ -5,27 +5,7 @@ import 'package:quiz_app/func_utils.dart';
 import 'package:quiz_app/home_page.dart';
 import 'package:flutter/foundation.dart';
 
-
-
-
-// Global variable to store total marks for correct answers of all questions
 int totalCorrectMarks = 0;
-
-// class Question {
-//   Question(this.text, this.opt, this.mks, this.isCorrect, this.isMultipleCorrect);
-
-//   String text; // Question text
-//   List<String> opt; // List of options (4 options)
-//   List<int> mks; // Marks: [correct marks, incorrect marks, unattempted marks]
-//   List<bool> isCorrect; // List of booleans to indicate which options are correct
-//   bool isMultipleCorrect; // Toggle state for allowing multiple correct answers
-
-//   @override
-//   String toString() {
-//     return 'Question{text: $text, opt: $opt, mks: $mks, isCorrect: $isCorrect, isMultipleCorrect: $isMultipleCorrect}';
-//   }
-// }
-
 
 class QuizInputPage extends StatefulWidget {
   @override
@@ -71,30 +51,28 @@ class _QuizInputPageState extends State<QuizInputPage> {
 
         setState(() {
           if (currentQuestionIndex < allQuestions.length) {
-            // Update existing question
             totalCorrectMarks = totalCorrectMarks - marks[0];
             allQuestions[currentQuestionIndex] = newQuestion;
             totalCorrectMarks += marks[0];
           } else {
-            // Add new question
             allQuestions.add(newQuestion);
-            totalCorrectMarks += marks[0]; // Update the total marks for correct answers
+            totalCorrectMarks += marks[0]; 
           }
 
-          _resetForm(); // Reset form after adding or updating question
+          _resetForm(); 
 
-          // Move to the next question or prepare a new form for input
+        
           if (currentQuestionIndex < allQuestions.length - 1) {
             _loadQuestion(currentQuestionIndex + 1);
           } else {
-            currentQuestionIndex++; // Move to a new question index
+            currentQuestionIndex++; 
           }
         });
 
         print('Question added or updated: ${newQuestion.text}');
         print('Total Correct Marks: $totalCorrectMarks');
       } else {
-        // Show error message if no correct option is selected
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select at least one correct answer.')),
         );
@@ -102,9 +80,9 @@ class _QuizInputPageState extends State<QuizInputPage> {
     }
   }
 
-  // Method to reset the form after a question is added or updated
+  
   void _resetForm() {
-    _formKey.currentState!.reset(); // Reset the form fields
+    _formKey.currentState!.reset(); 
     questionTextController.clear();
     for (var controller in optionControllers) {
       controller.clear();
@@ -112,7 +90,7 @@ class _QuizInputPageState extends State<QuizInputPage> {
     isCorrect = [false, false, false, false];
   }
 
-  // Method to finalize input and print all questions
+  
   void _finishQuestions() {
     print('All questions added or updated:');
     for (var question in allQuestions) {
@@ -124,7 +102,7 @@ class _QuizInputPageState extends State<QuizInputPage> {
     Navigator.pop(context);
   }
 
-  // Method to load a question for editing
+  
   void _loadQuestion(int index) {
     if (index >= 0 && index < allQuestions.length) {
       setState(() {
@@ -143,19 +121,19 @@ class _QuizInputPageState extends State<QuizInputPage> {
     }
   }
 
-  // Method to navigate to the previous question
+  
   void _previousQuestion() {
     if (currentQuestionIndex > 0) {
       _loadQuestion(currentQuestionIndex - 1);
     }
   }
 
-  // Method to navigate to the next question
+  
   void _nextQuestion() {
     if (currentQuestionIndex < allQuestions.length - 1) {
       _loadQuestion(currentQuestionIndex + 1);
     } else {
-      _resetForm(); // Clear form for new question input
+      _resetForm(); 
     }
   }
 
@@ -177,15 +155,15 @@ class _QuizInputPageState extends State<QuizInputPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Question ${currentQuestionIndex + 1}', // Display the current question number
+                  'Question ${currentQuestionIndex + 1}', 
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 TextFormField(
                   controller: questionTextController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Question Text',
-                    border: OutlineInputBorder(), // Rectangular border
+                    border: OutlineInputBorder(), 
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -194,18 +172,18 @@ class _QuizInputPageState extends State<QuizInputPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Multiple Correct'),
+                    const Text('Multiple Correct'),
                     Switch(
                       value: isMultipleCorrect,
                       onChanged: (value) {
                         setState(() {
                           isMultipleCorrect = value;
                           if (!isMultipleCorrect) {
-                            // Reset all isCorrect values to false if multiple correct is off
+                            
                             isCorrect = [false, false, false, false];
                           }
                         });
@@ -223,7 +201,7 @@ class _QuizInputPageState extends State<QuizInputPage> {
                               controller: optionControllers[index],
                               decoration: InputDecoration(
                                 labelText: 'Option ${index + 1}',
-                                border: OutlineInputBorder(), // Rectangular border
+                                border: const OutlineInputBorder(), 
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
@@ -250,19 +228,19 @@ class _QuizInputPageState extends State<QuizInputPage> {
                               });
                             },
                           ),
-                          //Text('Correct'),
+                          
                         ],
                       ),
-                      SizedBox(height: 10), // Add space between option inputs
+                      const SizedBox(height: 10), 
                     ],
                   );
                 }),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: correctMarksController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Marks for Correct Answer',
-                    border: OutlineInputBorder(), // Rectangular border
+                    border: OutlineInputBorder(), 
                   ),
                   keyboardType: TextInputType.number,
                   validator: (value) {
@@ -275,12 +253,12 @@ class _QuizInputPageState extends State<QuizInputPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: incorrectMarksController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Marks for Incorrect Answer',
-                    border: OutlineInputBorder(), // Rectangular border
+                    border: OutlineInputBorder(), 
                   ),
                   keyboardType: TextInputType.number,
                   validator: (value) {
@@ -293,12 +271,12 @@ class _QuizInputPageState extends State<QuizInputPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: unattemptedMarksController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Marks for Unattempted Question',
-                    border: OutlineInputBorder(), // Rectangular border
+                    border: OutlineInputBorder(), 
                   ),
                   keyboardType: TextInputType.number,
                   validator: (value) {
@@ -311,28 +289,62 @@ class _QuizInputPageState extends State<QuizInputPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     ElevatedButton(
                       onPressed: currentQuestionIndex > 0 ? _previousQuestion : null,
-                      child: Text('Previous'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFB904), 
+                        foregroundColor: Colors.white, 
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+                        shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                      ),
+                      child: const Text('Prev'),
                     ),
                     ElevatedButton(
                       onPressed: _addOrUpdateQuestion,
-                      child: Text('Add/Update Question'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2B99FF), 
+                        foregroundColor: Colors.white, 
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+                        shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                      ),
+                      child: const Text('Add / Update'),
                     ),
                     ElevatedButton(
                       onPressed: currentQuestionIndex < allQuestions.length - 1 ? _nextQuestion : null,
-                      child: Text('Next'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0DDC30), 
+                        foregroundColor: Colors.white, 
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+                        shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                      ),
+                      child: const Text('Next'),
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _finishQuestions,
-                  child: Text('Finish Entering Questions'),
+                const SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _finishQuestions,
+                    style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0DDC30), 
+                          foregroundColor: Colors.white, 
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+                          shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                          ),
+                    ),
+                    child: const Text('Finish Entering Questions'),
+                  ),
                 ),
               ],
             ),
@@ -465,14 +477,6 @@ class _CreateTestPageState extends State<CreateTestPage> {
     Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
   }
 
-  // void getData(ind) async{
-  //   final db = FirebaseFirestore.instance;
-  //   final quizMap = await createdTests[ind].get().data();
-  //   if(quizMap['isComplete']) {}
-  //   else {
-  //     curr_quiz = Quiz.fromMap(quizMap['id'], quizMap);
-  //   }
-  // }
 
   
 
@@ -503,7 +507,7 @@ class _CreateTestPageState extends State<CreateTestPage> {
               children: [
                 Text(
                   'Test Code : ${curr_quiz.id}', // Placeholder for test code
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 Material(
                   color: Colors.transparent,
@@ -557,11 +561,11 @@ class _CreateTestPageState extends State<CreateTestPage> {
               icon: const Icon(Icons.add),
               label: const Text('Add Questions'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue, // Button color
-                foregroundColor: Colors.white, // Text color
-                minimumSize: const Size(double.infinity, 50), // Full-width button
+                backgroundColor: Colors.blue, 
+                foregroundColor: Colors.white, 
+                minimumSize: const Size(double.infinity, 50), 
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), // Reduced border radius
+                  borderRadius: BorderRadius.circular(8), 
                 ),
               ),
             ),
@@ -571,11 +575,11 @@ class _CreateTestPageState extends State<CreateTestPage> {
               icon: const Icon(Icons.save_outlined),
               label: const Text('Save Quiz'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue, // Button color
-                foregroundColor: Colors.white, // Text color
-                minimumSize: const Size(double.infinity, 50), // Full-width button
+                backgroundColor: Colors.blue, 
+                foregroundColor: Colors.white, 
+                minimumSize: const Size(double.infinity, 50), 
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), // Reduced border radius
+                  borderRadius: BorderRadius.circular(8), 
                 ),
               ),
             ),
@@ -583,14 +587,16 @@ class _CreateTestPageState extends State<CreateTestPage> {
             ElevatedButton(
               onPressed: _createTest,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green, // Button color
-                foregroundColor: Colors.white, // Text color
-                minimumSize: const Size(double.infinity, 50), // Full-width button
+                backgroundColor: const Color(0xFF0DDC30), 
+                foregroundColor: Colors.white, 
+                minimumSize: const Size(double.infinity, 50), 
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), // Reduced border radius
+                  borderRadius: BorderRadius.circular(8), 
                 ),
               ),
-              child: const Text('Create Test'),
+              child: const Text('Create Test', style: TextStyle(
+                fontWeight: FontWeight.w600,
+              )),
             ),
             const SizedBox(height: 8.0),
             const Text(
