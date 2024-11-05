@@ -549,13 +549,19 @@ class _QuizPageState extends State<QuizPage> {
                                 fontSize: 20,
                               ),
                             ),
+                            
                             Text(
-                              _newQuestion.text,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 20,
+                                _newQuestion.text,
+                                maxLines:
+                                        2, // Limiting to 2 lines for short options
+                                    overflow: TextOverflow
+                                        .ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 20,
+                                ),
                               ),
-                            ),
+                            
                           ],
                         ),
                       ),

@@ -45,7 +45,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               'phno': userDoc['phno'],
               'institute': userDoc['institute'],
               'createdTests': userDoc['createdTests'],
-              'answeredTests': userDoc['createdTests'],
+              'answeredTests': userDoc['answeredTests'],
           };
 
           CollectionReference usersCollection = FirebaseFirestore.instance.collection('users');
@@ -55,13 +55,22 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           prefs.setString('username', username);
           prefs.setString('email', email);
           print('Done');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Password Reset Successful'))
+          );
           // return true;
         } else {
           // return false;
           print('false');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Email not matching user credential entered during sign up'))
+          );
         }
       } else {
         print('false');
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Password Reset Unsuccsesful'))
+          );
         // return false;
       }
     } catch (e) {

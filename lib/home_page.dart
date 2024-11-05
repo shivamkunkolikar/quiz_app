@@ -133,6 +133,7 @@ class _HomePageState extends State<HomePage> {
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.remove('username');
                 await prefs.remove('email');
+                user_dash = Dashboard();
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
               },

@@ -416,6 +416,7 @@ Future<void> updateHomeInfo() async{
     }
     else {
       print('No Dashoard');
+      user_dash = Dashboard();
       user_dash.username = username;
       user_dash.noAnsweredtests = answeredTests.length;
       user_dash.noCreatedtests = createdTests.length;

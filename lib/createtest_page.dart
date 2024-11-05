@@ -121,9 +121,33 @@ class _QuizInputPageState extends State<QuizInputPage> {
     }
   }
 
+//   void _loadQuestion(int index) {
+//   if (index >= 0 && index < allQuestions.length) {
+//     setState(() {
+//       currentQuestionIndex = index;
+//       Question question = allQuestions[index];
+      
+//       // Load question text and options
+//       questionTextController.text = question.text;
+//       for (int i = 0; i < 4; i++) {
+//         optionControllers[i].text = question.opt[i];
+//       }
+
+//       // Load marks and multiple correct
+//       correctMarksController.text = question.mks[0].toString();
+//       incorrectMarksController.text = question.mks[1].toString();
+//       unattemptedMarksController.text = question.mks[2].toString();
+      
+//       // Reload the `isCorrect` list with a new instance
+//       isCorrect = List<bool>.from(question.isCorrect);
+//       isMultipleCorrect = question.isMultipleCorrect;
+//     });
+//   }
+// }
   
   void _previousQuestion() {
     if (currentQuestionIndex > 0) {
+      _resetForm();
       _loadQuestion(currentQuestionIndex - 1);
     }
   }

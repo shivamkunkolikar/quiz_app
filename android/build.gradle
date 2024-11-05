@@ -16,3 +16,35 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
+
+// buildscript {
+//     ext.kotlin_version = '1.6.0'  // Use the Kotlin version from the error message or as needed
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
+//     dependencies {
+//         classpath "com.android.tools.build:gradle:7.2.1"  // Ensure you use a compatible Gradle version
+//         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+//         // Add other necessary dependencies
+//     }
+// }
+
+// allprojects {
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
+// }
+
+// rootProject.buildDir = "../build"
+// subprojects {
+//     project.buildDir = "${rootProject.buildDir}/${project.name}"
+// }
+// subprojects {
+//     project.evaluationDependsOn(":app")
+// }
+
+// tasks.register("clean", Delete) {
+//     delete rootProject.buildDir
+// }
